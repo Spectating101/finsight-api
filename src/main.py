@@ -49,7 +49,11 @@ async def lifespan(app: FastAPI):
 
     # Connect to Redis
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-    redis_client = await redis.from_url(redis_url, decode_responses=True)
+    redis_client = await redis.from_url(
+        redis_url,
+        decode_responses=True,
+        ssl_cert_reqs="none"  # Required for Heroku Redis TLS
+    )
     logger.info("Redis connected")
 
     # Initialize managers
