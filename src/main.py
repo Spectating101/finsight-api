@@ -80,13 +80,6 @@ async def lifespan(app: FastAPI):
     subs_module.set_dependencies(stripe_manager)
     logger.info("Route dependencies injected")
 
-    # Add middleware
-    from src.middleware import AuthMiddleware, RateLimitMiddleware
-
-    app.add_middleware(RateLimitMiddleware, redis_client=redis_client)
-    app.add_middleware(AuthMiddleware, api_key_manager=api_key_manager)
-    logger.info("Middleware configured")
-
     yield
 
     # Shutdown
