@@ -72,6 +72,21 @@ async def lifespan(app: FastAPI):
     register_source(sec_source)
     logger.info("Data sources registered", sources=["SEC_EDGAR"])
 
+    # Inject dependencies into route modules
+    from src.api import auth as auth_module
+    from src.api import subscriptions as subs_module
+
+    auth_module.set_dependencies(api_key_manager, db_pool)
+    subs_module.set_dependencies(stripe_manager)
+    logger.info("Route dependencies injected")
+
+    # Add middleware
+    from src.middleware import AuthMiddleware, RateLimitMiddleware
+
+    app.add_middleware(RateLimitMiddleware, redis_client=redis_client)
+    app.add_middleware(AuthMiddleware, api_key_manager=api_key_manager)
+    logger.info("Middleware configured")
+
     yield
 
     # Shutdown
@@ -183,27 +198,8 @@ async def health():
 # Import and include routers
 from src.api import metrics, auth, companies, subscriptions
 
-# Set dependencies for auth and subscriptions routes
-@app.on_event("startup")
-async def setup_route_dependencies():
-    """Setup route dependencies and middleware after managers are initialized"""
-    # Wait a bit for lifespan to complete
-    import asyncio
-    await asyncio.sleep(0.1)
-
-    # Inject dependencies into route modules
-    from src.api import auth as auth_module
-    from src.api import subscriptions as subs_module
-
-    auth_module.set_dependencies(api_key_manager, db_pool)
-    subs_module.set_dependencies(stripe_manager)
-
-    # Add authentication and rate limiting middleware
-    # Note: These must be added after lifespan startup completes
-    from src.middleware import AuthMiddleware, RateLimitMiddleware
-
-    app.add_middleware(RateLimitMiddleware, redis_client=redis_client)
-    app.add_middleware(AuthMiddleware, api_key_manager=api_key_manager)
+# Note: Dependencies are injected during lifespan startup
+# Middleware is added after lifespan completes via the lifespan context manager
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(metrics.router, prefix="/api/v1", tags=["Financial Metrics"])
