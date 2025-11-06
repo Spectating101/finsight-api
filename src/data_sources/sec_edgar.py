@@ -52,6 +52,11 @@ class SECEdgarSource(DataSourcePlugin):
         self._session_loop = None
         self._ticker_cik_cache: Dict[str, str] = {}
 
+        # Rate limiting: SEC allows 10 requests per second
+        self._rate_limit_lock = asyncio.Lock()
+        self._last_request_time = 0.0
+        self._min_request_interval = 0.1  # 100ms between requests = 10 req/sec
+
     def get_source_type(self) -> DataSourceType:
         return DataSourceType.SEC_EDGAR
 
@@ -61,6 +66,19 @@ class SECEdgarSource(DataSourcePlugin):
             DataSourceCapability.HISTORICAL,
             DataSourceCapability.FILINGS
         ]
+
+    async def _wait_for_rate_limit(self):
+        """Enforce SEC rate limit of 10 requests per second"""
+        async with self._rate_limit_lock:
+            now = asyncio.get_event_loop().time()
+            time_since_last = now - self._last_request_time
+
+            if time_since_last < self._min_request_interval:
+                wait_time = self._min_request_interval - time_since_last
+                logger.debug("Rate limiting SEC request", wait_time_ms=int(wait_time * 1000))
+                await asyncio.sleep(wait_time)
+
+            self._last_request_time = asyncio.get_event_loop().time()
 
     async def _get_session(self) -> aiohttp.ClientSession:
         """Get or create aiohttp session"""
@@ -91,6 +109,7 @@ class SECEdgarSource(DataSourcePlugin):
             session = await self._get_session()
             url = "https://www.sec.gov/files/company_tickers.json"
 
+            await self._wait_for_rate_limit()
             async with session.get(url) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -128,6 +147,7 @@ class SECEdgarSource(DataSourcePlugin):
             url = f"{self.base_url}/api/xbrl/companyfacts/CIK{cik}.json"
             session = await self._get_session()
 
+            await self._wait_for_rate_limit()
             async with session.get(url) as response:
                 if response.status != 200:
                     logger.warning("Failed to fetch SEC data", ticker=ticker, status=response.status)
@@ -228,6 +248,7 @@ class SECEdgarSource(DataSourcePlugin):
             session = await self._get_session()
             url = "https://www.sec.gov/files/company_tickers.json"
 
+            await self._wait_for_rate_limit()
             async with session.get(url) as response:
                 if response.status != 200:
                     return []
@@ -261,6 +282,7 @@ class SECEdgarSource(DataSourcePlugin):
             session = await self._get_session()
             url = f"{self.base_url}/api/xbrl/companyfacts/CIK0000320193.json"  # Apple
 
+            await self._wait_for_rate_limit()
             async with session.get(url) as response:
                 return response.status == 200
 
