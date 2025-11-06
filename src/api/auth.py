@@ -5,7 +5,7 @@ Authentication and API Key Management Routes
 import secrets
 import structlog
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends, Header
+from fastapi import APIRouter, HTTPException, Depends, Header, Request
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 
