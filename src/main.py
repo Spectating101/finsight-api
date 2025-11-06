@@ -17,6 +17,7 @@ from src.auth.api_keys import APIKeyManager
 from src.billing.stripe_integration import StripeManager
 from src.middleware.auth import AuthMiddleware
 from src.middleware.rate_limiter import RateLimitMiddleware
+from src.middleware.security_headers import SecurityHeadersMiddleware
 from src.data_sources.sec_edgar import SECEdgarSource
 from src.data_sources import register_source
 from src.utils.background_tasks import BackgroundTaskManager
@@ -239,6 +240,13 @@ async def rate_limit_middleware(request: Request, call_next):
 
     rate_mw = RateLimitMiddleware(app, redis_client)
     return await rate_mw.dispatch(request, call_next)
+
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    """Apply security headers to all responses"""
+    sec_mw = SecurityHeadersMiddleware(app)
+    return await sec_mw.dispatch(request, call_next)
 
 
 # Add Prometheus metrics
