@@ -145,7 +145,9 @@ async def get_metrics(
 
 
 @router.get("/metrics/available")
-async def list_available_metrics():
+async def list_available_metrics(
+    user: User = Depends(get_current_user)
+):
     """
     List all available financial metrics
 

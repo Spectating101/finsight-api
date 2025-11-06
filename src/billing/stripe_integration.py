@@ -212,7 +212,7 @@ class StripeManager:
 
     async def handle_webhook(self, payload: bytes, signature: str) -> Dict[str, Any]:
         """
-        Handle Stripe webhook event
+        Handle Stripe webhook event with idempotency protection
 
         Args:
             payload: Raw webhook payload
@@ -227,12 +227,38 @@ class StripeManager:
                 payload, signature, self.webhook_secret
             )
 
-            # Store event for debugging
+            # Check for duplicate events (idempotency)
             async with self.db.acquire() as conn:
+                existing = await conn.fetchrow(
+                    """
+                    SELECT event_id, processed, processed_at
+                    FROM webhook_events
+                    WHERE event_id = $1
+                    """,
+                    event.id
+                )
+
+                if existing:
+                    logger.info(
+                        "Webhook already received (idempotency check)",
+                        event_id=event.id,
+                        event_type=event.type,
+                        processed=existing['processed'],
+                        processed_at=existing['processed_at']
+                    )
+                    return {
+                        "status": "duplicate",
+                        "event_type": event.type,
+                        "event_id": event.id,
+                        "processed": existing['processed']
+                    }
+
+                # Store event for audit trail
                 await conn.execute(
                     """
-                    INSERT INTO webhook_events (event_id, event_type, payload)
-                    VALUES ($1, $2, $3)
+                    INSERT INTO webhook_events (event_id, event_type, payload, processed)
+                    VALUES ($1, $2, $3, false)
+                    ON CONFLICT (event_id) DO NOTHING
                     """,
                     event.id, event.type, event.to_dict()
                 )
@@ -248,6 +274,8 @@ class StripeManager:
                 await self._handle_payment_succeeded(event)
             elif event.type == "invoice.payment_failed":
                 await self._handle_payment_failed(event)
+            else:
+                logger.info("Unhandled webhook event type", event_type=event.type)
 
             # Mark as processed
             async with self.db.acquire() as conn:
@@ -260,8 +288,8 @@ class StripeManager:
                     datetime.utcnow(), event.id
                 )
 
-            logger.info("Webhook processed", event_type=event.type, event_id=event.id)
-            return {"status": "success", "event_type": event.type}
+            logger.info("Webhook processed successfully", event_type=event.type, event_id=event.id)
+            return {"status": "success", "event_type": event.type, "event_id": event.id}
 
         except Exception as e:
             logger.error("Webhook processing failed", error=str(e))

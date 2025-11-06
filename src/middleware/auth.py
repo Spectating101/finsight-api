@@ -54,7 +54,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         result = await self.key_manager.validate_key(api_key)
 
         if not result:
-            logger.warning("Invalid API key", key_prefix=api_key[:12])
+            logger.warning("Invalid API key attempt", path=request.url.path)
             raise HTTPException(
                 status_code=401,
                 detail={

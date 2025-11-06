@@ -3,7 +3,7 @@ Company Search and Information Routes
 """
 
 import structlog
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, HTTPException, Depends, Query, Request
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -27,15 +27,18 @@ class CompanySearchResponse(BaseModel):
     count: int
 
 
-async def get_current_user_from_request(request) -> tuple[User, APIKey]:
-    """Get authenticated user from request state"""
+async def get_current_user_from_request(request: Request) -> tuple[User, APIKey]:
+    """Get authenticated user from request state (set by auth middleware)"""
     user = getattr(request.state, "user", None)
     api_key = getattr(request.state, "api_key", None)
 
     if not user or not api_key:
         raise HTTPException(
             status_code=401,
-            detail="Authentication required"
+            detail={
+                "error": "authentication_required",
+                "message": "Valid API key required"
+            }
         )
 
     return user, api_key
@@ -43,7 +46,8 @@ async def get_current_user_from_request(request) -> tuple[User, APIKey]:
 
 @router.get("/companies/search", response_model=CompanySearchResponse)
 async def search_companies(
-    q: str = Query(..., description="Search query (company name or ticker)", min_length=1)
+    q: str = Query(..., description="Search query (company name or ticker)", min_length=1),
+    auth: tuple[User, APIKey] = Depends(get_current_user_from_request)
 ):
     """
     Search for companies by name or ticker
@@ -112,7 +116,8 @@ async def search_companies(
 
 @router.get("/companies/{ticker}")
 async def get_company_info(
-    ticker: str
+    ticker: str,
+    auth: tuple[User, APIKey] = Depends(get_current_user_from_request)
 ):
     """
     Get company information by ticker

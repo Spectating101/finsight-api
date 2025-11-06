@@ -67,30 +67,57 @@ class APIKeyManager:
             (full_key, api_key_object)
             IMPORTANT: full_key is only returned here, never stored
         """
-        # Generate key
-        full_key, key_hash, key_prefix = self.generate_key()
+        # Retry logic for hash collisions (extremely unlikely but handle gracefully)
+        max_retries = 3
+        last_error = None
 
-        # Generate key ID
-        key_id = f"key_{secrets.token_urlsafe(16)}"
+        for attempt in range(max_retries):
+            try:
+                # Generate key
+                full_key, key_hash, key_prefix = self.generate_key()
 
-        # Calculate expiration
-        expires_at = None
-        if expires_days:
-            expires_at = datetime.utcnow() + timedelta(days=expires_days)
+                # Generate key ID
+                key_id = f"key_{secrets.token_urlsafe(16)}"
 
-        # Store in database
-        async with self.db.acquire() as conn:
-            await conn.execute(
-                """
-                INSERT INTO api_keys (
-                    key_id, user_id, key_hash, key_prefix, name,
-                    is_test_mode, expires_at, created_at
+                # Calculate expiration
+                expires_at = None
+                if expires_days:
+                    expires_at = datetime.utcnow() + timedelta(days=expires_days)
+
+                # Store in database
+                async with self.db.acquire() as conn:
+                    await conn.execute(
+                        """
+                        INSERT INTO api_keys (
+                            key_id, user_id, key_hash, key_prefix, name,
+                            is_test_mode, expires_at, created_at
+                        )
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        """,
+                        key_id, user_id, key_hash, key_prefix, name,
+                        test_mode, expires_at, datetime.utcnow()
+                    )
+
+                # Success - break out of retry loop
+                break
+
+            except asyncpg.exceptions.UniqueViolationError as e:
+                last_error = e
+                logger.warning(
+                    "API key hash collision detected, retrying",
+                    attempt=attempt + 1,
+                    max_retries=max_retries,
+                    user_id=user_id
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                """,
-                key_id, user_id, key_hash, key_prefix, name,
-                test_mode, expires_at, datetime.utcnow()
-            )
+
+                # If this was the last attempt, raise the error
+                if attempt == max_retries - 1:
+                    logger.error(
+                        "Failed to generate unique API key after retries",
+                        user_id=user_id,
+                        attempts=max_retries
+                    )
+                    raise ValueError("Failed to generate unique API key. Please try again.")
 
         logger.info(
             "API key created",
@@ -145,17 +172,30 @@ class APIKeyManager:
             )
 
             if not key_row:
-                logger.warning("Invalid API key attempt", key_prefix=key[:12])
+                logger.warning("Invalid API key attempt")
                 return None
 
-            # Update last used timestamp
+            # Update last used timestamp and usage counters
+            current_time = datetime.utcnow()
+
             await conn.execute(
                 """
                 UPDATE api_keys
                 SET last_used_at = $1, total_calls = total_calls + 1
                 WHERE key_id = $2
                 """,
-                datetime.utcnow(), key_row['key_id']
+                current_time, key_row['key_id']
+            )
+
+            # Update user's monthly API call count (CRITICAL for billing)
+            await conn.execute(
+                """
+                UPDATE users
+                SET api_calls_this_month = api_calls_this_month + 1,
+                    last_api_call = $1
+                WHERE user_id = $2
+                """,
+                current_time, key_row['user_id']
             )
 
             # Build user object

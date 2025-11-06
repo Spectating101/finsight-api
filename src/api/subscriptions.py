@@ -10,18 +10,22 @@ from typing import Optional
 
 from src.billing.stripe_integration import StripeManager
 from src.models.user import User, APIKey, PricingTier
+from src.auth.api_keys import APIKeyManager
 
 logger = structlog.get_logger(__name__)
 router = APIRouter()
 
 # Global dependencies (injected from main.py)
 _stripe_manager: Optional[StripeManager] = None
+_api_key_manager: Optional[APIKeyManager] = None
 
 
-def set_dependencies(stripe_manager: StripeManager):
+def set_dependencies(stripe_manager: StripeManager, api_key_manager: APIKeyManager = None):
     """Set global dependencies"""
-    global _stripe_manager
+    global _stripe_manager, _api_key_manager
     _stripe_manager = stripe_manager
+    if api_key_manager:
+        _api_key_manager = api_key_manager
 
 
 def get_stripe_manager() -> StripeManager:
@@ -31,16 +35,35 @@ def get_stripe_manager() -> StripeManager:
     return _stripe_manager
 
 
+def get_api_key_manager() -> APIKeyManager:
+    """Dependency to get API key manager"""
+    if _api_key_manager is None:
+        raise HTTPException(status_code=503, detail="Auth service not initialized")
+    return _api_key_manager
+
+
 async def get_current_user_from_header(
-    authorization: str = Header(..., description="API key"),
+    authorization: str = Header(..., description="Bearer token or API key"),
+    manager: APIKeyManager = Depends(get_api_key_manager)
 ) -> tuple[User, APIKey]:
-    """Get authenticated user from header (simplified for now)"""
-    # This should use the auth middleware in production
-    # For now, raise error to indicate auth is required
-    raise HTTPException(
-        status_code=401,
-        detail="Authentication required"
-    )
+    """Extract and validate API key from Authorization header"""
+
+    # Support both "Bearer fsk_xxx" and "fsk_xxx" formats
+    key = authorization
+    if authorization.startswith("Bearer "):
+        key = authorization[7:]
+
+    result = await manager.validate_key(key)
+    if not result:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "error": "invalid_api_key",
+                "message": "Invalid or expired API key"
+            }
+        )
+
+    return result
 
 
 class CreateCheckoutRequest(BaseModel):

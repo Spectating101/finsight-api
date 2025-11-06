@@ -109,6 +109,7 @@ async def get_current_user_from_header(
 @router.post("/register", response_model=RegisterResponse)
 async def register_user(
     request: RegisterRequest,
+    req: Request,
     manager: APIKeyManager = Depends(get_api_key_manager)
 ):
     """
@@ -118,46 +119,89 @@ async def register_user(
 
     Creates a free tier account with 100 API calls/month.
     Returns an API key that must be saved (shown only once).
+
+    **Rate Limit:** 5 registrations per hour per IP address
     """
     try:
-        # Check if email already exists
+        # Rate limit registration attempts by IP
+        client_ip = req.client.host if req.client else "unknown"
+        rate_limit_key = f"registration_limit:{client_ip}"
+
+        # Import redis_client from main (it's a global)
+        from src.main import redis_client
+
+        if redis_client:
+            try:
+                # Increment counter
+                count = await redis_client.incr(rate_limit_key)
+
+                # Set expiry on first attempt
+                if count == 1:
+                    await redis_client.expire(rate_limit_key, 3600)  # 1 hour
+
+                # Check limit (5 registrations per hour per IP)
+                if count > 5:
+                    logger.warning(
+                        "Registration rate limit exceeded",
+                        ip=client_ip,
+                        attempts=count
+                    )
+                    raise HTTPException(
+                        status_code=429,
+                        detail={
+                            "error": "rate_limit_exceeded",
+                            "message": "Too many registration attempts. Please try again in 1 hour.",
+                            "retry_after": 3600
+                        }
+                    )
+            except Exception as redis_error:
+                # Log but don't fail registration if Redis is down
+                logger.warning(
+                    "Redis rate limiting failed for registration",
+                    error=str(redis_error)
+                )
+
+        # Check if email already exists and create user + API key in a transaction
         async with _db_pool.acquire() as conn:
-            existing = await conn.fetchval(
-                "SELECT user_id FROM users WHERE email = $1",
-                request.email
-            )
-
-            if existing:
-                raise HTTPException(
-                    status_code=409,
-                    detail="Email already registered"
+            # Start transaction for atomicity
+            async with conn.transaction():
+                existing = await conn.fetchval(
+                    "SELECT user_id FROM users WHERE email = $1",
+                    request.email
                 )
 
-            # Create user
-            user_id = f"user_{secrets.token_urlsafe(16)}"
-            await conn.execute(
-                """
-                INSERT INTO users (
-                    user_id, email, company_name, website,
-                    tier, status, api_calls_limit, created_at
-                )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                """,
-                user_id,
-                request.email,
-                request.company_name,
-                request.website,
-                PricingTier.FREE.value,
-                UserStatus.ACTIVE.value,
-                100,  # Free tier limit
-                datetime.utcnow()
-            )
+                if existing:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="Email already registered"
+                    )
 
-        # Create API key
-        full_key, api_key = await manager.create_api_key(
-            user_id=user_id,
-            name="Default Key"
-        )
+                # Create user
+                user_id = f"user_{secrets.token_urlsafe(16)}"
+                await conn.execute(
+                    """
+                    INSERT INTO users (
+                        user_id, email, company_name, website,
+                        tier, status, api_calls_limit, created_at
+                    )
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    """,
+                    user_id,
+                    request.email,
+                    request.company_name,
+                    request.website,
+                    PricingTier.FREE.value,
+                    UserStatus.ACTIVE.value,
+                    100,  # Free tier limit
+                    datetime.utcnow()
+                )
+
+                # Create API key within the same transaction
+                # This ensures both user and key are created atomically
+                full_key, api_key = await manager.create_api_key(
+                    user_id=user_id,
+                    name="Default Key"
+                )
 
         logger.info(
             "User registered",

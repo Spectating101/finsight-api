@@ -19,6 +19,18 @@ from src.middleware.auth import AuthMiddleware
 from src.middleware.rate_limiter import RateLimitMiddleware
 from src.data_sources.sec_edgar import SECEdgarSource
 from src.data_sources import register_source
+from src.utils.background_tasks import BackgroundTaskManager
+
+# Initialize Sentry if configured
+sentry_dsn = os.getenv("SENTRY_DSN")
+if sentry_dsn:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        environment=os.getenv("ENVIRONMENT", "production"),
+        traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+        profiles_sample_rate=float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.1")),
+    )
 
 logger = structlog.get_logger(__name__)
 
@@ -27,47 +39,102 @@ db_pool: asyncpg.Pool = None
 redis_client: redis.Redis = None
 api_key_manager: APIKeyManager = None
 stripe_manager: StripeManager = None
+background_tasks: BackgroundTaskManager = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
-    global db_pool, redis_client, api_key_manager, stripe_manager
+    global db_pool, redis_client, api_key_manager, stripe_manager, background_tasks
 
     # Startup
     logger.info("Starting FinSight API", version="1.0.0")
 
+    # Validate required environment variables
+    required_vars = {
+        "DATABASE_URL": "PostgreSQL database connection string",
+        "REDIS_URL": "Redis connection string",
+        "STRIPE_SECRET_KEY": "Stripe API secret key",
+        "STRIPE_WEBHOOK_SECRET": "Stripe webhook signing secret",
+        "SEC_USER_AGENT": "SEC EDGAR API user agent"
+    }
+
+    missing_vars = []
+    invalid_vars = []
+
+    for var, description in required_vars.items():
+        value = os.getenv(var)
+        if not value:
+            missing_vars.append(f"{var} ({description})")
+            continue
+
+        # Validate format for specific variables
+        if var == "STRIPE_SECRET_KEY" and not value.startswith("sk_"):
+            invalid_vars.append(f"{var}: must start with 'sk_' (got: {value[:10]}...)")
+        elif var == "STRIPE_WEBHOOK_SECRET" and not value.startswith("whsec_"):
+            invalid_vars.append(f"{var}: must start with 'whsec_' (got: {value[:10]}...)")
+        elif var == "DATABASE_URL" and not value.startswith("postgresql"):
+            invalid_vars.append(f"{var}: must be a PostgreSQL URL (got: {value[:20]}...)")
+        elif var == "REDIS_URL" and not (value.startswith("redis://") or value.startswith("rediss://")):
+            invalid_vars.append(f"{var}: must be a Redis URL (got: {value[:20]}...)")
+
+    if missing_vars:
+        error_msg = f"Missing required environment variables:\n  " + "\n  ".join(missing_vars)
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    if invalid_vars:
+        error_msg = f"Invalid environment variable formats:\n  " + "\n  ".join(invalid_vars)
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    logger.info("Environment variables validated successfully")
+
     # Connect to database
-    database_url = os.getenv("DATABASE_URL", "postgresql://localhost/finsight_production")
+    database_url = os.getenv("DATABASE_URL")
     db_pool = await asyncpg.create_pool(
         database_url,
         min_size=5,
         max_size=20,
-        command_timeout=60
+        command_timeout=60,
+        timeout=30,  # Connection acquisition timeout (seconds)
+        max_inactive_connection_lifetime=300  # Close idle connections after 5 minutes
     )
-    logger.info("Database pool created")
+    logger.info("Database pool created", min_size=5, max_size=20)
 
-    # Connect to Redis
-    redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    # Connect to Redis with proper TLS configuration
+    redis_url = os.getenv("REDIS_URL")
+
+    # Configure SSL/TLS for Redis
+    import ssl
+    ssl_context = None
+    if redis_url.startswith("rediss://"):
+        ssl_context = ssl.create_default_context()
+        # Only skip verification if explicitly set (e.g., for Heroku Redis)
+        if os.getenv("REDIS_TLS_SKIP_VERIFY", "false").lower() == "true":
+            logger.warning("Redis TLS verification disabled - not recommended for production")
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+
     redis_client = await redis.from_url(
         redis_url,
         decode_responses=True,
-        ssl_cert_reqs="none"  # Required for Heroku Redis TLS
+        ssl=ssl_context
     )
-    logger.info("Redis connected")
+    logger.info("Redis connected", tls_enabled=redis_url.startswith("rediss://"))
 
     # Initialize managers
     api_key_manager = APIKeyManager(db_pool)
     stripe_manager = StripeManager(
-        api_key=os.getenv("STRIPE_SECRET_KEY", ""),
-        webhook_secret=os.getenv("STRIPE_WEBHOOK_SECRET", ""),
+        api_key=os.getenv("STRIPE_SECRET_KEY"),
+        webhook_secret=os.getenv("STRIPE_WEBHOOK_SECRET"),
         db_pool=db_pool
     )
     logger.info("Managers initialized")
 
     # Register data sources
     sec_source = SECEdgarSource({
-        "user_agent": os.getenv("SEC_USER_AGENT", "FinSight API/1.0 (contact@finsight.io)")
+        "user_agent": os.getenv("SEC_USER_AGENT")
     })
     register_source(sec_source)
     logger.info("Data sources registered", sources=["SEC_EDGAR"])
@@ -77,14 +144,21 @@ async def lifespan(app: FastAPI):
     from src.api import subscriptions as subs_module
 
     auth_module.set_dependencies(api_key_manager, db_pool)
-    subs_module.set_dependencies(stripe_manager)
+    subs_module.set_dependencies(stripe_manager, api_key_manager)
     logger.info("Route dependencies injected")
+
+    # Start background tasks (monthly usage reset, etc.)
+    background_tasks = BackgroundTaskManager(db_pool)
+    await background_tasks.start()
+    logger.info("Background tasks started")
 
     yield
 
     # Shutdown
     logger.info("Shutting down FinSight API")
 
+    if background_tasks:
+        await background_tasks.stop()
     if db_pool:
         await db_pool.close()
     if redis_client:
@@ -102,24 +176,66 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Add CORS middleware
+# Add CORS middleware with production-safe defaults
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "*")
+allowed_origins = allowed_origins_str.split(",") if allowed_origins_str != "*" else ["*"]
+
+# Warn if using wildcard in production
+if allowed_origins == ["*"]:
+    logger.warning(
+        "CORS wildcard (*) enabled - not recommended for production",
+        recommendation="Set ALLOWED_ORIGINS environment variable to specific domains"
+    )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("ALLOWED_ORIGINS", "*").split(","),
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE", "PUT", "PATCH"],
     allow_headers=["*"]
 )
 
-# Add authentication middleware
-@app.on_event("startup")
-async def startup_middleware():
-    """Add middleware after startup (needs initialized managers)"""
-    # Wait for lifespan startup to complete
-    pass
+# Request ID tracking middleware (runs first)
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    """Add unique request ID to all requests for tracing"""
+    import uuid
+
+    # Get request ID from header or generate new one
+    request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
+    request.state.request_id = request_id
+
+    # Process request
+    response = await call_next(request)
+
+    # Add request ID to response headers
+    response.headers["X-Request-ID"] = request_id
+
+    return response
 
 
-# Note: Middleware is added after startup in the route setup below
+# Authentication and rate limiting middleware
+@app.middleware("http")
+async def authentication_middleware(request: Request, call_next):
+    """Apply authentication to all requests"""
+    # Skip middleware if managers not initialized yet
+    if api_key_manager is None:
+        return await call_next(request)
+
+    auth_mw = AuthMiddleware(app, api_key_manager)
+    return await auth_mw.dispatch(request, call_next)
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Apply rate limiting to all requests"""
+    # Skip middleware if Redis not initialized yet
+    if redis_client is None:
+        return await call_next(request)
+
+    rate_mw = RateLimitMiddleware(app, redis_client)
+    return await rate_mw.dispatch(request, call_next)
+
 
 # Add Prometheus metrics
 Instrumentator().instrument(app).expose(app, include_in_schema=False)
