@@ -10,6 +10,7 @@ from typing import List, Optional, Dict, Any
 
 from src.data_sources import get_registry, DataSourceCapability
 from src.models.user import User, APIKey, PricingTier, TIER_LIMITS
+from src.utils.validators import validate_ticker, validate_concept
 
 logger = structlog.get_logger(__name__)
 router = APIRouter()
@@ -79,8 +80,24 @@ async def get_metrics(
     List of metric values with SEC EDGAR citations
     """
     try:
-        # Parse metrics
+        # Validate ticker
+        ticker = validate_ticker(ticker)
+
+        # Parse and validate metrics
         metric_list = [m.strip() for m in metrics.split(",")]
+
+        # Limit number of metrics in a single request (prevent abuse)
+        if len(metric_list) > 20:
+            raise HTTPException(
+                status_code=400,
+                detail="Too many metrics requested (max 20 per request)"
+            )
+
+        # Validate each metric name
+        try:
+            metric_list = [validate_concept(m) for m in metric_list]
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
         # Get data source registry
         registry = get_registry()

@@ -6,11 +6,17 @@ import secrets
 import structlog
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, Header, Request
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional, List
 
 from src.auth.api_keys import APIKeyManager
 from src.models.user import User, APIKey, PricingTier, UserStatus
+from src.utils.validators import (
+    validate_company_name,
+    validate_api_key_name,
+    validate_website_url,
+    ValidatedBaseModel
+)
 
 logger = structlog.get_logger(__name__)
 router = APIRouter()
@@ -34,11 +40,19 @@ def get_api_key_manager() -> APIKeyManager:
     return _api_key_manager
 
 
-class RegisterRequest(BaseModel):
+class RegisterRequest(ValidatedBaseModel):
     """User registration request"""
     email: EmailStr
-    company_name: Optional[str] = None
-    website: Optional[str] = None
+    company_name: Optional[str] = Field(None, max_length=255)
+    website: Optional[str] = Field(None, max_length=255)
+
+    @validator('company_name')
+    def validate_company(cls, v):
+        return validate_company_name(v)
+
+    @validator('website')
+    def validate_url(cls, v):
+        return validate_website_url(v)
 
 
 class RegisterResponse(BaseModel):
@@ -51,11 +65,15 @@ class RegisterResponse(BaseModel):
     message: str
 
 
-class CreateKeyRequest(BaseModel):
+class CreateKeyRequest(ValidatedBaseModel):
     """Request to create a new API key"""
-    name: str = Field(default="Default Key", description="Name for this API key")
+    name: str = Field(default="Default Key", max_length=100, description="Name for this API key")
     test_mode: bool = Field(default=False, description="Create a test mode key")
-    expires_days: Optional[int] = Field(None, description="Days until expiration")
+    expires_days: Optional[int] = Field(None, ge=1, le=3650, description="Days until expiration (1-3650)")
+
+    @validator('name')
+    def validate_key_name(cls, v):
+        return validate_api_key_name(v)
 
 
 class CreateKeyResponse(BaseModel):

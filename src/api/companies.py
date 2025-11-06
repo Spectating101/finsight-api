@@ -9,6 +9,7 @@ from typing import List, Optional
 
 from src.data_sources import get_registry
 from src.models.user import User, APIKey
+from src.utils.validators import ValidationRules
 
 logger = structlog.get_logger(__name__)
 router = APIRouter()
@@ -64,6 +65,23 @@ async def search_companies(
     List of matching companies with ticker, name, and CIK
     """
     try:
+        # Validate and sanitize search query
+        q = q.strip()
+
+        # Limit query length to prevent abuse
+        if len(q) > 100:
+            raise HTTPException(
+                status_code=400,
+                detail="Search query too long (max 100 characters)"
+            )
+
+        # Check for injection attempts
+        if ValidationRules.has_sql_injection(q) or ValidationRules.has_xss_attempt(q):
+            raise HTTPException(
+                status_code=400,
+                detail="Search query contains invalid characters"
+            )
+
         # Get data source registry
         registry = get_registry()
         sources = registry.list_all()
