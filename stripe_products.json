@@ -1,0 +1,142 @@
+{
+  "products": [
+    {
+      "name": "FinSight API - Starter",
+      "description": "Perfect for indie developers and small projects. 5,000 API calls per month with full access to financial ratios, batch endpoints, and company overviews.",
+      "pricing": {
+        "amount": 1900,
+        "currency": "usd",
+        "interval": "month",
+        "usage_type": "licensed"
+      },
+      "features": [
+        "5,000 API calls per month",
+        "Pre-calculated financial ratios",
+        "Batch endpoints (up to 20 companies)",
+        "Company overview aggregations",
+        "SEC EDGAR fundamentals",
+        "Email support (24hr response)",
+        "GDPR compliant",
+        "Commercial use allowed"
+      ],
+      "metadata": {
+        "tier": "starter",
+        "api_calls_limit": "5000",
+        "rate_limit_per_minute": "50"
+      }
+    },
+    {
+      "name": "FinSight API - Pro",
+      "description": "For growing applications and small businesses. 50,000 API calls per month with priority support and 99.9% uptime SLA.",
+      "pricing": {
+        "amount": 4900,
+        "currency": "usd",
+        "interval": "month",
+        "usage_type": "licensed"
+      },
+      "features": [
+        "50,000 API calls per month",
+        "Everything in Starter, plus:",
+        "Priority email support (12hr response)",
+        "99.9% uptime SLA",
+        "Higher rate limits (200/min)",
+        "Feature request priority",
+        "Dedicated Slack channel (10+ users)"
+      ],
+      "metadata": {
+        "tier": "professional",
+        "api_calls_limit": "50000",
+        "rate_limit_per_minute": "200"
+      }
+    },
+    {
+      "name": "FinSight API - Enterprise",
+      "description": "For companies and high-traffic applications. 500,000 API calls per month with dedicated support and custom features.",
+      "pricing": {
+        "amount": 14900,
+        "currency": "usd",
+        "interval": "month",
+        "usage_type": "licensed"
+      },
+      "features": [
+        "500,000 API calls per month",
+        "Everything in Pro, plus:",
+        "Priority support (4hr response)",
+        "Custom API call limits available",
+        "Dedicated Slack channel",
+        "Feature requests prioritized",
+        "Custom integrations (if reasonable)",
+        "99.9% uptime SLA with credits"
+      ],
+      "metadata": {
+        "tier": "enterprise",
+        "api_calls_limit": "500000",
+        "rate_limit_per_minute": "1000"
+      }
+    }
+  ],
+
+  "setup_instructions": {
+    "step_1": "Log into Stripe Dashboard: https://dashboard.stripe.com",
+    "step_2": "Navigate to: Products → Create Product",
+    "step_3": "For each product above:",
+    "step_3a": "Enter product name and description",
+    "step_3b": "Set pricing (amount in cents, currency, interval)",
+    "step_3c": "Add features in the 'Features' section",
+    "step_3d": "Add metadata key-value pairs",
+    "step_3e": "Click 'Save product'",
+    "step_4": "Copy the price IDs (price_xxx) for each product",
+    "step_5": "Update src/models/user.py STRIPE_PRICE_IDS with your actual price IDs",
+    "step_6": "Test checkout flow in test mode first"
+  },
+
+  "webhook_setup": {
+    "step_1": "Navigate to: Developers → Webhooks → Add endpoint",
+    "step_2": "Endpoint URL: https://your-domain.com/api/v1/billing/webhook",
+    "step_3": "Select events to listen for:",
+    "events": [
+      "customer.subscription.created",
+      "customer.subscription.updated",
+      "customer.subscription.deleted",
+      "invoice.payment_succeeded",
+      "invoice.payment_failed",
+      "checkout.session.completed"
+    ],
+    "step_4": "Click 'Add endpoint'",
+    "step_5": "Copy the webhook signing secret (whsec_xxx)",
+    "step_6": "Add to environment variables: STRIPE_WEBHOOK_SECRET=whsec_xxx"
+  },
+
+  "testing_checklist": [
+    "Create product in test mode",
+    "Test checkout flow with test card: 4242 4242 4242 4242",
+    "Verify webhook receives events",
+    "Confirm user tier updates in database",
+    "Test subscription cancellation",
+    "Test invoice.payment_failed handling",
+    "Switch to live mode only after all tests pass"
+  ],
+
+  "stripe_test_cards": {
+    "success": "4242 4242 4242 4242",
+    "requires_authentication": "4000 0025 0000 3155",
+    "declined": "4000 0000 0000 9995"
+  },
+
+  "price_id_mapping": {
+    "comment": "After creating products, update these in src/models/user.py",
+    "starter": "price_XXX_starter_monthly",
+    "professional": "price_XXX_pro_monthly",
+    "enterprise": "price_XXX_enterprise_monthly"
+  },
+
+  "early_adopter_discount": {
+    "comment": "Optional: Create coupon for first 50 users",
+    "name": "EARLY50",
+    "percent_off": 50,
+    "duration": "forever",
+    "max_redemptions": 50,
+    "applies_to": ["starter"],
+    "marketing_copy": "Lock in $9.50/mo forever (50% off) - First 50 users only"
+  }
+}
