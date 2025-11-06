@@ -147,9 +147,11 @@ async def lifespan(app: FastAPI):
     # Inject dependencies into route modules
     from src.api import auth as auth_module
     from src.api import subscriptions as subs_module
+    from src.api import gdpr as gdpr_module
 
     auth_module.set_dependencies(api_key_manager, db_pool)
     subs_module.set_dependencies(stripe_manager, api_key_manager)
+    gdpr_module.set_dependencies(db_pool)
     logger.info("Route dependencies injected")
 
     # Start background tasks (monthly usage reset, etc.)
@@ -349,7 +351,7 @@ async def health():
 
 
 # Import and include routers
-from src.api import metrics, auth, companies, subscriptions
+from src.api import metrics, auth, companies, subscriptions, gdpr
 
 # Note: Dependencies are injected during lifespan startup
 # Middleware is added after lifespan completes via the lifespan context manager
@@ -358,6 +360,7 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(metrics.router, prefix="/api/v1", tags=["Financial Metrics"])
 app.include_router(companies.router, prefix="/api/v1", tags=["Companies"])
 app.include_router(subscriptions.router, prefix="/api/v1", tags=["Billing"])
+app.include_router(gdpr.router, prefix="/api/v1", tags=["GDPR Compliance"])
 
 
 if __name__ == "__main__":
