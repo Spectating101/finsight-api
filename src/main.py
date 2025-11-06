@@ -282,30 +282,62 @@ async def root():
 # Health check
 @app.get("/health")
 async def health():
-    """Health check endpoint"""
+    """Comprehensive health check endpoint"""
+    health_status = {
+        "status": "healthy",
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat(),
+        "checks": {}
+    }
+
+    all_healthy = True
+
     try:
         # Check database
         async with db_pool.acquire() as conn:
             await conn.fetchval("SELECT 1")
+        health_status["checks"]["database"] = "ok"
+    except Exception as e:
+        logger.error("Database health check failed", error=str(e))
+        health_status["checks"]["database"] = f"error: {str(e)[:100]}"
+        all_healthy = False
 
+    try:
         # Check Redis
         await redis_client.ping()
-
-        return {
-            "status": "healthy",
-            "database": "ok",
-            "redis": "ok",
-            "version": "1.0.0"
-        }
+        health_status["checks"]["redis"] = "ok"
     except Exception as e:
-        logger.error("Health check failed", error=str(e))
-        return JSONResponse(
-            status_code=503,
-            content={
-                "status": "unhealthy",
-                "error": str(e)
-            }
-        )
+        logger.error("Redis health check failed", error=str(e))
+        health_status["checks"]["redis"] = f"error: {str(e)[:100]}"
+        all_healthy = False
+
+    # Check data sources
+    try:
+        from src.data_sources import get_registry
+        registry = get_registry()
+        source_health = await registry.health_check_all()
+
+        health_status["checks"]["data_sources"] = {}
+        for source_type, is_healthy in source_health.items():
+            status = "ok" if is_healthy else "degraded"
+            health_status["checks"]["data_sources"][source_type.value] = status
+            if not is_healthy:
+                all_healthy = False
+    except Exception as e:
+        logger.error("Data source health check failed", error=str(e))
+        health_status["checks"]["data_sources"] = f"error: {str(e)[:100]}"
+        all_healthy = False
+
+    # Set overall status
+    health_status["status"] = "healthy" if all_healthy else "degraded"
+
+    # Return appropriate HTTP status code
+    status_code = 200 if all_healthy else 503
+
+    return JSONResponse(
+        status_code=status_code,
+        content=health_status
+    )
 
 
 # Import and include routers
