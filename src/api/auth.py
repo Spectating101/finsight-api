@@ -127,8 +127,9 @@ async def register_user(
         client_ip = req.client.host if req.client else "unknown"
         rate_limit_key = f"registration_limit:{client_ip}"
 
-        # Import redis_client from main (it's a global)
-        from src.main import redis_client
+        # Get Redis client without circular import
+        from src.dependencies import get_redis_client
+        redis_client = get_redis_client()
 
         if redis_client:
             try:
@@ -197,10 +198,11 @@ async def register_user(
                 )
 
                 # Create API key within the same transaction
-                # This ensures both user and key are created atomically
+                # Pass the connection to ensure true atomicity
                 full_key, api_key = await manager.create_api_key(
                     user_id=user_id,
-                    name="Default Key"
+                    name="Default Key",
+                    conn=conn
                 )
 
         logger.info(

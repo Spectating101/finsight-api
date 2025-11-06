@@ -20,6 +20,7 @@ from src.middleware.rate_limiter import RateLimitMiddleware
 from src.data_sources.sec_edgar import SECEdgarSource
 from src.data_sources import register_source
 from src.utils.background_tasks import BackgroundTaskManager
+from src import dependencies
 
 # Initialize Sentry if configured
 sentry_dsn = os.getenv("SENTRY_DSN")
@@ -122,6 +123,9 @@ async def lifespan(app: FastAPI):
         ssl=ssl_context
     )
     logger.info("Redis connected", tls_enabled=redis_url.startswith("rediss://"))
+
+    # Make Redis available to other modules
+    dependencies.set_redis_client(redis_client)
 
     # Initialize managers
     api_key_manager = APIKeyManager(db_pool)

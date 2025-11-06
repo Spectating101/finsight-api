@@ -52,7 +52,8 @@ class APIKeyManager:
         user_id: str,
         name: str = "Default Key",
         test_mode: bool = False,
-        expires_days: Optional[int] = None
+        expires_days: Optional[int] = None,
+        conn: Optional[asyncpg.Connection] = None
     ) -> Tuple[str, APIKey]:
         """
         Create a new API key for a user
@@ -62,6 +63,7 @@ class APIKeyManager:
             name: Key name for identification
             test_mode: Whether this is a test key
             expires_days: Optional expiration in days
+            conn: Optional database connection (for transactions)
 
         Returns:
             (full_key, api_key_object)
@@ -84,8 +86,9 @@ class APIKeyManager:
                 if expires_days:
                     expires_at = datetime.utcnow() + timedelta(days=expires_days)
 
-                # Store in database
-                async with self.db.acquire() as conn:
+                # Store in database - use provided connection or acquire new one
+                if conn:
+                    # Part of a transaction
                     await conn.execute(
                         """
                         INSERT INTO api_keys (
@@ -97,6 +100,20 @@ class APIKeyManager:
                         key_id, user_id, key_hash, key_prefix, name,
                         test_mode, expires_at, datetime.utcnow()
                     )
+                else:
+                    # Standalone operation
+                    async with self.db.acquire() as conn:
+                        await conn.execute(
+                            """
+                            INSERT INTO api_keys (
+                                key_id, user_id, key_hash, key_prefix, name,
+                                is_test_mode, expires_at, created_at
+                            )
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                            """,
+                            key_id, user_id, key_hash, key_prefix, name,
+                            test_mode, expires_at, datetime.utcnow()
+                        )
 
                 # Success - break out of retry loop
                 break
