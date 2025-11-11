@@ -1,0 +1,85 @@
+name: Deploy to Heroku
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual deployment
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.13.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          healthcheck: "https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com/health"
+          delay: 10
+          rollbackonhealthcheckfailed: true
+
+      - name: Run database migrations
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          # Install Heroku CLI
+          curl https://cli-assets.heroku.com/install.sh | sh
+
+          # Login to Heroku
+          echo $HEROKU_API_KEY | heroku auth:token
+
+          # Run migrations (if using Alembic in future)
+          # heroku run -a ${{ secrets.HEROKU_APP_NAME }} python -m alembic upgrade head
+
+      - name: Verify deployment
+        run: |
+          HEALTH_URL="https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com/health"
+          echo "Checking health at $HEALTH_URL"
+
+          # Wait for app to be ready
+          sleep 15
+
+          # Check health
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL)
+
+          if [ $RESPONSE -eq 200 ]; then
+            echo "✓ Deployment successful! API is healthy."
+          else
+            echo "✗ Deployment failed. Health check returned $RESPONSE"
+            exit 1
+          fi
+
+      - name: Run smoke tests
+        run: |
+          API_URL="https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com"
+
+          # Test root endpoint
+          curl -f $API_URL/ || exit 1
+
+          # Test docs
+          curl -f $API_URL/docs || exit 1
+
+          # Test pricing
+          curl -f $API_URL/api/v1/pricing || exit 1
+
+          echo "✓ Smoke tests passed"
+
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "🚀 Deployment successful!"
+          echo "API: https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com"
+          echo "Docs: https://${{ secrets.HEROKU_APP_NAME }}.herokuapp.com/docs"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Check the logs for details."

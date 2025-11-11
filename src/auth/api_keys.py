@@ -259,3 +259,90 @@ class APIKeyManager:
                 )
                 for row in rows
             ]
+
+    async def rotate_key(
+        self,
+        old_key_id: str,
+        user_id: str,
+        grace_period_days: int = 7
+    ) -> Tuple[str, APIKey]:
+        """
+        Rotate an API key (create new key, schedule old key for deletion)
+
+        Args:
+            old_key_id: ID of key to rotate
+            user_id: User ID (for authorization)
+            grace_period_days: Days until old key is revoked (default: 7)
+
+        Returns:
+            (new_full_key, new_api_key_object)
+        """
+        async with self.db.acquire() as conn:
+            # Get old key info
+            old_key = await conn.fetchrow(
+                """
+                SELECT key_id, name, is_test_mode
+                FROM api_keys
+                WHERE key_id = $1 AND user_id = $2 AND is_active = true
+                """,
+                old_key_id, user_id
+            )
+
+            if not old_key:
+                raise ValueError("API key not found or already revoked")
+
+            # Create new key with same name
+            new_key_name = f"{old_key['name']} (Rotated)"
+            full_key, new_api_key = await self.create_api_key(
+                user_id=user_id,
+                name=new_key_name,
+                test_mode=old_key['is_test_mode']
+            )
+
+            # Schedule old key for expiration after grace period
+            expires_at = datetime.utcnow() + timedelta(days=grace_period_days)
+            await conn.execute(
+                """
+                UPDATE api_keys
+                SET expires_at = $1
+                WHERE key_id = $2
+                """,
+                expires_at, old_key_id
+            )
+
+            logger.info(
+                "API key rotated",
+                user_id=user_id,
+                old_key_id=old_key_id,
+                new_key_id=new_api_key.key_id,
+                grace_period_days=grace_period_days
+            )
+
+            return full_key, new_api_key
+
+    async def cleanup_expired_keys(self) -> int:
+        """
+        Clean up expired API keys (should be run periodically)
+
+        Returns:
+            Number of keys revoked
+        """
+        async with self.db.acquire() as conn:
+            result = await conn.execute(
+                """
+                UPDATE api_keys
+                SET is_active = false
+                WHERE is_active = true
+                  AND expires_at IS NOT NULL
+                  AND expires_at < $1
+                """,
+                datetime.utcnow()
+            )
+
+            # Extract count from "UPDATE N" response
+            count = int(result.split()[-1]) if result else 0
+
+            if count > 0:
+                logger.info("Expired API keys cleaned up", count=count)
+
+            return count

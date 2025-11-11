@@ -372,3 +372,58 @@ async def get_current_user_info(
             "total_calls": api_key.total_calls
         }
     }
+
+
+@router.post("/keys/{key_id}/rotate", response_model=CreateKeyResponse)
+async def rotate_api_key(
+    key_id: str,
+    grace_period_days: int = Field(default=7, ge=1, le=30, description="Days until old key expires"),
+    auth: tuple[User, APIKey] = Depends(get_current_user_from_header),
+    manager: APIKeyManager = Depends(get_api_key_manager)
+):
+    """
+    Rotate an API key
+
+    **Authentication required**
+
+    Creates a new API key and schedules the old one for expiration.
+    This allows you to rotate keys without downtime by using a grace period.
+
+    The old key will continue to work for the grace period (1-30 days),
+    giving you time to update your applications.
+    """
+    user, _ = auth
+
+    try:
+        full_key, new_api_key = await manager.rotate_key(
+            old_key_id=key_id,
+            user_id=user.user_id,
+            grace_period_days=grace_period_days
+        )
+
+        logger.info(
+            "API key rotation requested",
+            user_id=user.user_id,
+            old_key_id=key_id,
+            new_key_id=new_api_key.key_id,
+            grace_period_days=grace_period_days
+        )
+
+        return CreateKeyResponse(
+            key_id=new_api_key.key_id,
+            api_key=full_key,
+            key_prefix=new_api_key.key_prefix,
+            name=new_api_key.name,
+            test_mode=new_api_key.is_test_mode,
+            created_at=new_api_key.created_at,
+            message=f"API key rotated successfully. Old key will expire in {grace_period_days} days. Save the new key - it won't be shown again!"
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error("Failed to rotate API key", user_id=user.user_id, error=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to rotate API key"
+        )

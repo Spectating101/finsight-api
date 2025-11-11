@@ -17,14 +17,18 @@ from src.auth.api_keys import APIKeyManager
 from src.billing.stripe_integration import StripeManager
 from src.middleware.auth import AuthMiddleware
 from src.middleware.rate_limiter import RateLimitMiddleware
+from src.middleware.security import SecurityMiddleware, IPWhitelistMiddleware
 from src.data_sources.sec_edgar import SECEdgarSource
 from src.data_sources import register_source
+from src.monitoring import init_sentry
+from src.cache import RedisCache
 
 logger = structlog.get_logger(__name__)
 
 # Global instances
 db_pool: asyncpg.Pool = None
 redis_client: redis.Redis = None
+redis_cache: RedisCache = None
 api_key_manager: APIKeyManager = None
 stripe_manager: StripeManager = None
 
@@ -32,10 +36,14 @@ stripe_manager: StripeManager = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
-    global db_pool, redis_client, api_key_manager, stripe_manager
+    global db_pool, redis_client, redis_cache, api_key_manager, stripe_manager
+
+    # Initialize Sentry error tracking
+    environment = os.getenv("ENVIRONMENT", "production")
+    init_sentry(environment=environment)
 
     # Startup
-    logger.info("Starting FinSight API", version="1.0.0")
+    logger.info("Starting FinSight API", version="1.0.0", environment=environment)
 
     # Connect to database
     database_url = os.getenv("DATABASE_URL", "postgresql://localhost/finsight_production")
@@ -55,6 +63,10 @@ async def lifespan(app: FastAPI):
         ssl_cert_reqs="none"  # Required for Heroku Redis TLS
     )
     logger.info("Redis connected")
+
+    # Initialize cache
+    redis_cache = RedisCache(redis_client, prefix="finsight")
+    logger.info("Cache initialized")
 
     # Initialize managers
     api_key_manager = APIKeyManager(db_pool)
@@ -107,19 +119,18 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("ALLOWED_ORIGINS", "*").split(","),
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE", "PUT", "PATCH"],
     allow_headers=["*"]
 )
 
-# Add authentication middleware
-@app.on_event("startup")
-async def startup_middleware():
-    """Add middleware after startup (needs initialized managers)"""
-    # Wait for lifespan startup to complete
-    pass
+# Add security middleware
+app.add_middleware(
+    SecurityMiddleware,
+    max_request_size=1024 * 1024,  # 1MB
+    max_query_params=50
+)
 
-
-# Note: Middleware is added after startup in the route setup below
+# Note: Auth and rate limit middleware will be added after startup when managers are initialized
 
 # Add Prometheus metrics
 Instrumentator().instrument(app).expose(app, include_in_schema=False)
