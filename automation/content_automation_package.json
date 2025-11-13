@@ -1,0 +1,946 @@
+{
+  "generated_at": "2025-11-13T06:30:00.264196",
+  "blog_posts": [
+    {
+      "title": "How to Access SEC EDGAR Financial Data via API",
+      "slug": "access-sec-edgar-api",
+      "keywords": [
+        "SEC EDGAR",
+        "financial data API",
+        "SEC filings"
+      ],
+      "target_audience": "developers",
+      "outline": [
+        "What is SEC EDGAR?",
+        "Why use an API instead of manual downloads?",
+        "Quick start with FinSight API",
+        "Code example: Fetch revenue for any company",
+        "Advanced: Batch processing multiple companies",
+        "Common pitfalls and solutions"
+      ]
+    },
+    {
+      "title": "Building a Stock Screener with Python and Financial APIs",
+      "slug": "build-stock-screener-python",
+      "keywords": [
+        "stock screener",
+        "Python",
+        "financial API",
+        "algorithmic trading"
+      ],
+      "target_audience": "quant developers",
+      "outline": [
+        "What is a stock screener?",
+        "Setting up your Python environment",
+        "Fetching financial metrics via FinSight API",
+        "Filtering companies by criteria",
+        "Building a dashboard with Streamlit",
+        "Scheduling daily updates"
+      ]
+    },
+    {
+      "title": "SEC EDGAR XBRL Data: A Developer's Guide",
+      "slug": "sec-edgar-xbrl-guide",
+      "keywords": [
+        "XBRL",
+        "SEC EDGAR",
+        "financial data",
+        "structured data"
+      ],
+      "target_audience": "fintech developers",
+      "outline": [
+        "What is XBRL and why it matters",
+        "Understanding SEC filing types (10-K, 10-Q, 8-K)",
+        "How to extract structured data from XBRL",
+        "Common XBRL concepts and mappings",
+        "Using FinSight API to access pre-parsed XBRL",
+        "Example: Compare 5 years of revenue data"
+      ]
+    },
+    {
+      "title": "Financial Data APIs: Free vs Paid - What's Worth It?",
+      "slug": "financial-api-comparison",
+      "keywords": [
+        "financial data API",
+        "API comparison",
+        "Alpha Vantage",
+        "IEX Cloud"
+      ],
+      "target_audience": "startup founders",
+      "outline": [
+        "Landscape of financial data providers",
+        "Free APIs: Alpha Vantage, Yahoo Finance",
+        "Paid APIs: FinSight, IEX Cloud, Intrinio",
+        "What you actually get with each tier",
+        "Citation tracking: Why it matters",
+        "ROI calculation for your use case"
+      ]
+    },
+    {
+      "title": "Real-Time vs Historical Financial Data: Which Do You Need?",
+      "slug": "realtime-vs-historical-data",
+      "keywords": [
+        "real-time data",
+        "historical data",
+        "financial API"
+      ],
+      "target_audience": "fintech builders",
+      "outline": [
+        "Understanding data latency requirements",
+        "Use cases for real-time data",
+        "Use cases for historical data",
+        "Cost implications of each approach",
+        "How to choose for your product",
+        "Hybrid approach: Best of both worlds"
+      ]
+    },
+    {
+      "title": "How Hedge Funds Use Financial Data APIs",
+      "slug": "hedge-funds-financial-apis",
+      "keywords": [
+        "hedge fund",
+        "algorithmic trading",
+        "quant",
+        "financial data"
+      ],
+      "target_audience": "finance professionals",
+      "outline": [
+        "The quantitative revolution in finance",
+        "Data sources hedge funds rely on",
+        "Automated trading strategies",
+        "Backtesting with historical data",
+        "Compliance and audit trails",
+        "Why citation tracking matters for regulation"
+      ]
+    },
+    {
+      "title": "Building a Fintech Startup: Data Infrastructure 101",
+      "slug": "fintech-data-infrastructure",
+      "keywords": [
+        "fintech",
+        "startup",
+        "data infrastructure",
+        "API"
+      ],
+      "target_audience": "founders",
+      "outline": [
+        "Core data needs for fintech products",
+        "Build vs buy decision for financial data",
+        "API-first architecture benefits",
+        "Scaling considerations",
+        "Compliance and data provenance",
+        "Case study: How we built FinSight"
+      ]
+    },
+    {
+      "title": "Financial Metrics That Matter: Beyond Revenue",
+      "slug": "financial-metrics-guide",
+      "keywords": [
+        "financial metrics",
+        "KPIs",
+        "fundamental analysis"
+      ],
+      "target_audience": "analysts",
+      "outline": [
+        "Income statement metrics",
+        "Balance sheet health indicators",
+        "Cash flow statement insights",
+        "Derived metrics (ROE, debt ratios, etc.)",
+        "Industry-specific metrics",
+        "How to access all of these via API"
+      ]
+    },
+    {
+      "title": "API Rate Limiting: Understanding Financial API Tiers",
+      "slug": "api-rate-limiting-guide",
+      "keywords": [
+        "rate limiting",
+        "API tiers",
+        "pricing"
+      ],
+      "target_audience": "developers",
+      "outline": [
+        "What is rate limiting?",
+        "Why financial APIs have rate limits",
+        "Calculating your actual needs",
+        "Caching strategies to reduce API calls",
+        "Batch processing for efficiency",
+        "When to upgrade tiers"
+      ]
+    },
+    {
+      "title": "Citation-Backed Financial Data: Why It Matters",
+      "slug": "citation-backed-financial-data",
+      "keywords": [
+        "citations",
+        "data provenance",
+        "SEC filings",
+        "compliance"
+      ],
+      "target_audience": "compliance professionals",
+      "outline": [
+        "The data provenance problem",
+        "Regulatory requirements for data sources",
+        "How FinSight provides citation tracking",
+        "Example: Tracing a number to its SEC filing",
+        "Audit trail benefits",
+        "Building trust with users"
+      ]
+    }
+  ],
+  "tweet_templates": [
+    "Did you know? {fact} Learn more about financial APIs: {link}",
+    "\ud83d\udca1 Pro tip: {tip} #fintech #API #developers",
+    "\ud83e\uddf5 Thread: {topic} (1/5)",
+    "\ud83d\udcca Quick comparison: {comparison}",
+    "\ud83c\udf93 Tutorial: {tutorial_title} - {link}",
+    "What financial metric do you use most? Reply below \ud83d\udc47",
+    "Building a fintech product? What's your biggest data challenge?",
+    "Developers: What would your dream financial API look like?",
+    "\ud83d\ude80 New feature: {feature_name} - {description}",
+    "\ud83d\udcc8 FinSight API now supports {new_capability}",
+    "\u26a1 Performance update: {improvement}",
+    "\"Best financial API for {use_case}\" - {customer_name}",
+    "\ud83c\udf89 We just processed our {milestone}th API call!",
+    "Join {customer_count}+ developers building with FinSight",
+    "Other APIs give you numbers. We give you citations. Big difference. \ud83d\udcda",
+    "Free tier: 100 API calls/month. No credit card. Start building: {link}",
+    "{price}/month for unlimited access to 10K+ companies. See pricing: {link}"
+  ],
+  "email_sequences": {
+    "onboarding": [
+      {
+        "day": 0,
+        "subject": "Welcome to FinSight API - Your API key is ready",
+        "content": "\nHi {name},\n\nWelcome to FinSight! Your API key is active and ready to use.\n\nHere's your key: {api_key}\n(Save this - we only show it once!)\n\n\ud83d\ude80 Quick Start:\ncurl https://api.finsight.io/v1/metrics?ticker=AAPL&metrics=revenue \\\n  -H \"X-API-Key: {api_key}\"\n\n\ud83d\udcda Documentation: https://api.finsight.io/docs\n\ud83d\udcac Questions? Just reply to this email.\n\nHappy building!\n- The FinSight Team\n            "
+      },
+      {
+        "day": 2,
+        "subject": "5 things you can build with FinSight API",
+        "content": "\nHi {name},\n\nHope you're enjoying FinSight! Here are 5 quick projects you can build:\n\n1. \ud83d\udcca Stock Screener - Filter companies by financial metrics\n2. \ud83c\udfaf Portfolio Tracker - Monitor your investments with real data\n3. \ud83d\udcc8 Financial Dashboard - Visualize company performance over time\n4. \ud83e\udd16 Trading Bot - Automate trading based on financial indicators\n5. \ud83d\udcf1 Mobile App - Build iOS/Android apps with financial data\n\nCode examples for all 5: https://github.com/finsight-api/examples\n\nNeed help? Just reply!\n\nBest,\nFinSight Team\n            "
+      },
+      {
+        "day": 7,
+        "subject": "You're at {usage}% of your free tier limit",
+        "content": "\nHi {name},\n\nJust a heads up - you've used {usage}% of your free tier (100 API calls/month).\n\nWant to keep building? Upgrade to Starter for unlimited access:\n- 1,000 API calls/month\n- 50 requests/minute\n- Access to Yahoo Finance data\n- Only $49/month\n\nUpgrade now: {upgrade_link}\n\nOr we'll reset your limit next month automatically.\n\nBest,\nFinSight Team\n            "
+      }
+    ],
+    "upgrade": [
+      {
+        "day": 0,
+        "subject": "\ud83c\udf89 Welcome to {tier} - Here's what's new",
+        "content": "\nHi {name},\n\nCongrats on upgrading to {tier}! \ud83c\udf89\n\nYou now have access to:\n{features_list}\n\nYour new limits:\n- {api_calls} API calls/month\n- {rate_limit} requests/minute\n\n\ud83d\ude80 Try these new features:\n{feature_examples}\n\nQuestions? Our support team is here to help.\n\nBest,\nFinSight Team\n            "
+      }
+    ]
+  },
+  "github_repos": [
+    {
+      "name": "python-stock-analyzer",
+      "description": "Analyze stocks using FinSight API - Python",
+      "readme": "\n# Stock Analyzer with FinSight API\n\nA Python tool to analyze stocks using financial data from FinSight API.\n\n## Features\n- Fetch financial metrics for any company\n- Compare multiple companies side-by-side\n- Calculate financial ratios\n- Export to CSV/JSON\n\n## Quick Start\n```python\nimport finsight\n\napi = finsight.Client(api_key=\"your_key_here\")\nmetrics = api.get_metrics(\"AAPL\", [\"revenue\", \"netIncome\", \"totalAssets\"])\nprint(metrics)\n```\n\n## Installation\n```bash\npip install finsight-api requests pandas\n```\n\n## Get Your API Key\nSign up free: https://api.finsight.io/register\n\n## Examples\nSee `examples/` folder for:\n- Basic stock screener\n- Portfolio tracker\n- Financial ratio calculator\n- Batch company analysis\n\n## Powered by FinSight API\nThe only financial API with SEC-grade citations.\n        "
+    },
+    {
+      "name": "javascript-financial-dashboard",
+      "description": "React dashboard for financial data - JavaScript",
+      "readme": "\n# Financial Dashboard with FinSight API\n\nReal-time financial dashboard built with React and FinSight API.\n\n## Demo\n[Live Demo](https://demo.finsight-dashboard.com)\n\n## Features\n- \ud83d\udcca Real-time financial metrics\n- \ud83d\udcc8 Interactive charts\n- \ud83d\udd0d Company search\n- \ud83d\udcf1 Mobile responsive\n\n## Quick Start\n```bash\nnpm install\nnpm start\n```\n\nSet your API key in `.env`:\n```\nREACT_APP_FINSIGHT_API_KEY=your_key_here\n```\n\n## Get Your API Key\nSign up free: https://api.finsight.io/register\n        "
+    }
+  ],
+  "content_calendar": [
+    {
+      "date": "2025-11-13T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-14T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Building a Stock Screener with Python and Financial APIs",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-14T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-15T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-16T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-17T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-18T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "How Hedge Funds Use Financial Data APIs",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-18T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-19T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-20T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-21T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "API Rate Limiting: Understanding Financial API Tiers",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-21T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-22T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-23T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-24T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-25T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "SEC EDGAR XBRL Data: A Developer's Guide",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-25T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-26T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-27T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-28T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "How Hedge Funds Use Financial Data APIs",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-28T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-29T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-11-30T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-01T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-02T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Citation-Backed Financial Data: Why It Matters",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-02T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-03T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-04T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-05T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "SEC EDGAR XBRL Data: A Developer's Guide",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-05T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-06T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-07T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-08T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-09T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Building a Fintech Startup: Data Infrastructure 101",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-09T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-10T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-11T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-12T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Citation-Backed Financial Data: Why It Matters",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-12T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-13T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-14T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-15T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-16T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Financial Data APIs: Free vs Paid - What's Worth It?",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-16T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-17T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-18T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-19T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Building a Fintech Startup: Data Infrastructure 101",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-19T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-20T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-21T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-22T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-23T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "How to Access SEC EDGAR Financial Data via API",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-23T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-24T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-25T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-26T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Financial Data APIs: Free vs Paid - What's Worth It?",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-26T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-27T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-28T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-29T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-30T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Financial Metrics That Matter: Beyond Revenue",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-30T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2025-12-31T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-01T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-02T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "How to Access SEC EDGAR Financial Data via API",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-02T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-03T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-04T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-05T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-06T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Real-Time vs Historical Financial Data: Which Do You Need?",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-06T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-07T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-08T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-09T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Financial Metrics That Matter: Beyond Revenue",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-09T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-10T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-11T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-12T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-13T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Building a Stock Screener with Python and Financial APIs",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-13T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-14T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-15T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-16T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Real-Time vs Historical Financial Data: Which Do You Need?",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-16T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-17T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-18T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-19T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-20T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "API Rate Limiting: Understanding Financial API Tiers",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-20T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-21T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-22T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-23T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Building a Stock Screener with Python and Financial APIs",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-23T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-24T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-25T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-26T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-27T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "How Hedge Funds Use Financial Data APIs",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-27T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-28T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-29T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-30T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "API Rate Limiting: Understanding Financial API Tiers",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-30T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-01-31T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-01T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-02T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-03T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "SEC EDGAR XBRL Data: A Developer's Guide",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-03T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-04T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-05T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-06T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "How Hedge Funds Use Financial Data APIs",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-06T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-07T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-08T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-09T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-10T06:30:00.263945",
+      "type": "blog_post",
+      "topic": "Citation-Backed Financial Data: Why It Matters",
+      "status": "scheduled"
+    },
+    {
+      "date": "2026-02-10T06:30:00.263945",
+      "type": "tweet",
+      "content": "Generated via AI - see templates",
+      "status": "scheduled"
+    }
+  ]
+}
