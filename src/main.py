@@ -20,6 +20,7 @@ from src.middleware.rate_limiter import RateLimitMiddleware
 from src.middleware.security_headers import SecurityHeadersMiddleware
 from src.data_sources.sec_edgar import SECEdgarSource
 from src.data_sources.yfinance_source import YahooFinanceSource
+from src.data_sources.finnhub_source import FinnhubSource
 from src.data_sources import register_source
 from src.utils.background_tasks import BackgroundTaskManager
 from src import dependencies
@@ -148,7 +149,13 @@ async def lifespan(app: FastAPI):
     yahoo_source = YahooFinanceSource({})
     register_source(yahoo_source)
 
-    logger.info("Data sources registered", sources=["SEC_EDGAR", "YAHOO_FINANCE"])
+    # Register Finnhub source (company news and profiles)
+    finnhub_source = FinnhubSource({
+        "api_key": os.getenv("FINNHUB_API_KEY")
+    })
+    register_source(finnhub_source)
+
+    logger.info("Data sources registered", sources=["SEC_EDGAR", "YAHOO_FINANCE", "FINNHUB"])
 
     # Inject dependencies into route modules
     from src.api import auth as auth_module
@@ -357,7 +364,7 @@ async def health():
 
 
 # Import and include routers
-from src.api import metrics, auth, companies, subscriptions, gdpr, company_data
+from src.api import metrics, auth, companies, subscriptions, gdpr, company_data, news
 
 # Note: Dependencies are injected during lifespan startup
 # Middleware is added after lifespan completes via the lifespan context manager
@@ -366,6 +373,7 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(metrics.router, prefix="/api/v1", tags=["Financial Metrics"])
 app.include_router(companies.router, prefix="/api/v1", tags=["Companies"])
 app.include_router(company_data.router, prefix="/api/v1", tags=["Company Data"])
+app.include_router(news.router, prefix="/api/v1", tags=["Company News"])
 app.include_router(subscriptions.router, prefix="/api/v1", tags=["Billing"])
 app.include_router(gdpr.router, prefix="/api/v1", tags=["GDPR Compliance"])
 
