@@ -4,11 +4,13 @@ Ratios, overviews, and batch endpoints for easy consumption
 """
 
 import structlog
+from datetime import datetime
 from fastapi import APIRouter, Request, HTTPException, Depends, Query
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 
 from src.data_sources import get_registry, DataSourceCapability
+from src.data_sources.base import DataSourceType
 from src.models.user import User, APIKey
 from src.utils.validators import validate_ticker
 from src.utils.financial_calculations import FinancialCalculator
@@ -370,4 +372,106 @@ async def get_batch_companies(
         raise HTTPException(
             status_code=500,
             detail="Failed to process batch request"
+        )
+
+
+class StockPriceResponse(BaseModel):
+    """Real-time stock price response"""
+    ticker: str
+    price: Optional[float]
+    previous_close: Optional[float]
+    day_high: Optional[float]
+    day_low: Optional[float]
+    volume: Optional[int]
+    market_cap: Optional[int]
+    currency: str = "USD"
+    source: str = "Yahoo Finance"
+    timestamp: str
+
+
+@router.get("/company/{ticker}/price", response_model=StockPriceResponse)
+async def get_stock_price(
+    ticker: str,
+    auth: tuple[User, APIKey] = Depends(get_current_user_from_request)
+):
+    """
+    Get real-time stock price
+
+    **Required Tier:** Free+
+
+    Returns current stock price from Yahoo Finance (real-time data).
+
+    **Example:**
+    ```
+    GET /api/v1/company/AAPL/price
+    ```
+
+    **Returns:**
+    Current stock price with intraday data (high, low, volume)
+
+    **Benefits:**
+    - Real-time prices (vs. SEC EDGAR quarterly data)
+    - Current market cap
+    - Intraday high/low
+    - Volume data
+    """
+    user, _ = auth
+
+    try:
+        # Validate ticker
+        ticker = validate_ticker(ticker)
+
+        # Get Yahoo Finance source
+        registry = get_registry()
+        sources = registry.get_by_capability(DataSourceCapability.REAL_TIME)
+
+        if not sources:
+            raise HTTPException(
+                status_code=503,
+                detail="Real-time data source not available"
+            )
+
+        yahoo_source = next((s for s in sources if s.source_type == DataSourceType.YAHOO_FINANCE), None)
+
+        if not yahoo_source:
+            raise HTTPException(
+                status_code=503,
+                detail="Yahoo Finance source not available"
+            )
+
+        # Get stock price
+        price_data = await yahoo_source.get_stock_price(ticker)
+
+        if not price_data or "price" not in price_data:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No price data found for ticker {ticker}"
+            )
+
+        logger.info(
+            "Stock price fetched",
+            user_id=user.user_id,
+            ticker=ticker,
+            price=price_data.get("price")
+        )
+
+        return StockPriceResponse(
+            ticker=ticker.upper(),
+            price=price_data.get("price"),
+            previous_close=price_data.get("previous_close"),
+            day_high=price_data.get("day_high"),
+            day_low=price_data.get("day_low"),
+            volume=price_data.get("volume"),
+            market_cap=price_data.get("market_cap"),
+            currency=price_data.get("currency", "USD"),
+            timestamp=datetime.utcnow().isoformat()
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Failed to fetch stock price", ticker=ticker, error=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to fetch stock price"
         )

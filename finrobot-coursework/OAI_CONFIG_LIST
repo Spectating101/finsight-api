@@ -1,0 +1,8 @@
+[
+  {
+    "model": "llama-3.3-70b",
+    "api_key": "YOUR_API_KEY_HERE",
+    "base_url": "https://api.cerebras.ai/v1",
+    "api_type": "openai"
+  }
+]

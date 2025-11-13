@@ -19,6 +19,7 @@ from src.middleware.auth import AuthMiddleware
 from src.middleware.rate_limiter import RateLimitMiddleware
 from src.middleware.security_headers import SecurityHeadersMiddleware
 from src.data_sources.sec_edgar import SECEdgarSource
+from src.data_sources.yfinance_source import YahooFinanceSource
 from src.data_sources import register_source
 from src.utils.background_tasks import BackgroundTaskManager
 from src import dependencies
@@ -142,7 +143,12 @@ async def lifespan(app: FastAPI):
         "user_agent": os.getenv("SEC_USER_AGENT")
     })
     register_source(sec_source)
-    logger.info("Data sources registered", sources=["SEC_EDGAR"])
+
+    # Register Yahoo Finance source (real-time market data)
+    yahoo_source = YahooFinanceSource({})
+    register_source(yahoo_source)
+
+    logger.info("Data sources registered", sources=["SEC_EDGAR", "YAHOO_FINANCE"])
 
     # Inject dependencies into route modules
     from src.api import auth as auth_module
