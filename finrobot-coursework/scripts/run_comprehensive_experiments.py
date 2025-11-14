@@ -1,15 +1,53 @@
 """
 Phase 4: Comprehensive Agent vs RAG Comparison Experiments
 
-This script runs sophisticated experiments comparing:
+This script runs OBJECTIVE, THOROUGH experiments comparing:
 - FinRobot Agent (multi-tool orchestration)
 - RAG System (retrieval + LLM)
 
-Across multiple dimensions:
-- Performance: Latency, throughput
-- Cost: API token usage
-- Quality: Accuracy, reasoning depth
-- Robustness: Error handling, edge cases
+Across 8 comprehensive dimensions with 40+ metrics:
+
+1. BASIC STRUCTURE (6 metrics)
+   - Word/sentence/paragraph count, avg sentence length
+   - Bullet points, section headers
+
+2. ANALYTICAL DEPTH (11 metrics)
+   - Financial metrics mentioned (P/E, ROE, margins, etc.)
+   - Historical references (quarters, years, temporal comparisons)
+   - Future projections, risk factors
+   - Peer/market comparisons
+
+3. DATA QUALITY (8 metrics)
+   - Numerical data points, dollar amounts, percentages
+   - Data sources referenced
+   - Specificity vs vagueness ratio
+   - Recency indicators
+
+4. REASONING QUALITY (4 metrics)
+   - Causal chains, evidence markers
+   - Conditional reasoning, alternative perspectives
+
+5. TASK-SPECIFIC (varies by task)
+   - Predictions: confidence, price targets, timeframes
+   - Recommendations: strength, justification, alternatives
+   - Analysis: breadth, quantitative/qualitative balance
+
+6. FACTUAL GROUNDING (4 metrics)
+   - Specific dates, company-specific vs generic mentions
+   - Specificity score
+
+7. LANGUAGE QUALITY (5 metrics)
+   - Confident vs hedging language ratio
+   - Average word length, complex sentences
+
+8. COMPREHENSIVENESS (2 metrics)
+   - Overall completeness score (9 factors)
+   - Comprehensiveness percentage
+
+PLUS performance metrics:
+- Latency, cost, tool calls, success rate
+
+NO BIAS - Objective academic comparison. Let the data speak.
 
 Generates data for statistical analysis and research paper.
 """
@@ -22,6 +60,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
 import os
+import re
+from collections import Counter
 
 from finrobot.experiments.experiment_runner import FinRobotExperimentRunner, ExperimentConfig
 from finrobot.experiments.rag_system import RAGChain
@@ -203,37 +243,271 @@ class ComprehensiveExperimentSuite:
 
     def _analyze_response_quality(self, response: str, task: Dict[str, str]) -> Dict[str, Any]:
         """
-        Analyze response quality metrics.
+        COMPREHENSIVE multi-dimensional response quality analysis.
+
+        Categories measured:
+        1. Basic Structure - length, format, organization
+        2. Analytical Depth - metrics mentioned, data points, projections
+        3. Data Quality - sources, recency, specificity, numerical grounding
+        4. Reasoning Quality - causal chains, evidence, logical structure
+        5. Task-Specific - prediction confidence, risk factors, recommendations
+        6. Factual Grounding - verifiable claims, dates, numbers, specificity
+        7. Language Quality - confidence, hedging, clarity
+        8. Comprehensiveness - topic coverage, completeness
 
         Args:
             response: System response
             task: Task definition
 
         Returns:
-            Quality metrics dict
+            Comprehensive quality metrics dict with 40+ metrics
         """
         quality = {}
+        response_lower = response.lower()
 
-        # Length-based metrics
-        quality["word_count"] = len(response.split())
-        quality["sentence_count"] = len([s for s in response.split('.') if s.strip()])
+        # ===== 1. BASIC STRUCTURE METRICS =====
+        words = response.split()
+        sentences = [s.strip() for s in response.split('.') if s.strip()]
+        paragraphs = [p.strip() for p in response.split('\n\n') if p.strip()]
 
-        # Check for key elements based on task type
+        quality["word_count"] = len(words)
+        quality["sentence_count"] = len(sentences)
+        quality["paragraph_count"] = len(paragraphs)
+        quality["avg_sentence_length"] = len(words) / len(sentences) if sentences else 0
+        quality["has_bullet_points"] = bool(re.search(r'[\n\r]\s*[-•*]', response))
+        quality["has_sections"] = bool(re.search(r'[\n\r]#{1,3}\s+\w+|[\n\r][A-Z][a-z]+:', response))
+
+        # ===== 2. ANALYTICAL DEPTH METRICS =====
+        # Financial metrics mentioned
+        financial_metrics = [
+            r'p/e ratio', r'price.*earnings', r'p/e\b',
+            r'roe\b', r'return on equity',
+            r'debt.*equity', r'debt ratio', r'd/e\b',
+            r'profit margin', r'operating margin', r'net margin',
+            r'revenue growth', r'earnings growth',
+            r'eps\b', r'earnings per share',
+            r'market cap', r'market capitalization',
+            r'dividend yield', r'payout ratio',
+            r'cash flow', r'free cash flow', r'fcf\b',
+            r'ebitda', r'operating income',
+            r'current ratio', r'quick ratio', r'liquidity',
+            r'beta\b', r'volatility',
+            r'book value', r'price.*book', r'p/b\b',
+        ]
+        quality["financial_metrics_mentioned"] = sum(
+            1 for metric in financial_metrics if re.search(metric, response_lower)
+        )
+
+        # Historical data references
+        quality["quarters_mentioned"] = len(re.findall(r'q[1-4]\s+\d{4}|quarter', response_lower))
+        quality["years_mentioned"] = len(re.findall(r'\b(19|20)\d{2}\b', response))
+        quality["temporal_comparisons"] = sum(
+            1 for phrase in ['year.*year', 'quarter.*quarter', 'vs.*previous', 'compared to', 'growth from']
+            if re.search(phrase, response_lower)
+        )
+
+        # Future projections
+        quality["has_future_projection"] = bool(re.search(
+            r'next\s+(quarter|year|month)|forecast|predict|expect|project|anticipate|outlook',
+            response_lower
+        ))
+        quality["projection_timeframe_specific"] = bool(re.search(
+            r'next\s+\d+\s+(months?|quarters?|years?)|by\s+(19|20)\d{2}|\d{4}\s+guidance',
+            response_lower
+        ))
+
+        # Risk factors
+        risk_keywords = [
+            'risk', 'threat', 'concern', 'challenge', 'headwind', 'uncertainty',
+            'downside', 'vulnerable', 'exposure', 'volatility', 'competition'
+        ]
+        quality["risk_factors_mentioned"] = sum(1 for kw in risk_keywords if kw in response_lower)
+
+        # Comparative analysis
+        quality["peer_comparison"] = bool(re.search(
+            r'compared to|versus|vs\.|relative to|peers?|competitors?|industry average|sector',
+            response_lower
+        ))
+        quality["market_comparison"] = bool(re.search(
+            r's&p 500|market|nasdaq|dow|index|benchmark',
+            response_lower
+        ))
+
+        # ===== 3. DATA QUALITY METRICS =====
+        # Number of specific numerical data points
+        numbers = re.findall(r'\$?\d+\.?\d*[BMK%]?', response)
+        quality["numerical_data_points"] = len(numbers)
+        quality["has_dollar_amounts"] = bool(re.search(r'\$\d+', response))
+        quality["has_percentages"] = bool(re.search(r'\d+\.?\d*%', response))
+
+        # Data sources referenced
+        sources = [
+            'yahoo finance', 'bloomberg', 'reuters', 'sec filing', '10-k', '10-q',
+            'earnings report', 'financial statement', 'balance sheet', 'income statement',
+            'analyst', 'research', 'news', 'announcement', 'press release'
+        ]
+        quality["data_sources_mentioned"] = sum(1 for src in sources if src in response_lower)
+
+        # Specificity vs vagueness
+        vague_terms = [
+            'roughly', 'approximately', 'about', 'around', 'some', 'many',
+            'several', 'various', 'significant', 'substantial'
+        ]
+        specific_terms = [
+            'exactly', 'precisely', 'specifically', '\d+\.?\d+%', '\$\d+',
+            'reported', 'announced', 'filed'
+        ]
+        quality["vague_term_count"] = sum(1 for term in vague_terms if term in response_lower)
+        quality["specific_term_count"] = sum(
+            1 for term in specific_terms if re.search(term, response_lower)
+        )
+        quality["specificity_ratio"] = (
+            quality["specific_term_count"] / max(quality["vague_term_count"], 1)
+        )
+
+        # Recency indicators
+        quality["mentions_recent_data"] = bool(re.search(
+            r'recent|latest|current|today|this\s+(week|month|quarter|year)|last\s+(week|month|quarter)',
+            response_lower
+        ))
+
+        # ===== 4. REASONING QUALITY METRICS =====
+        # Causal reasoning
+        causal_indicators = [
+            'because', 'since', 'due to', 'as a result', 'therefore', 'thus',
+            'consequently', 'leads to', 'results in', 'caused by', 'driven by'
+        ]
+        quality["causal_chains"] = sum(1 for ind in causal_indicators if ind in response_lower)
+
+        # Evidence-based reasoning
+        evidence_markers = [
+            'based on', 'according to', 'evidence', 'data shows', 'indicates that',
+            'demonstrates', 'suggests', 'supports', 'confirms', 'shows that'
+        ]
+        quality["evidence_markers"] = sum(1 for marker in evidence_markers if marker in response_lower)
+
+        # Counterfactual/conditional reasoning
+        quality["conditional_reasoning"] = sum(
+            1 for phrase in ['if', 'unless', 'provided that', 'assuming', 'in case']
+            if phrase in response_lower
+        )
+
+        # Multiple perspectives
+        quality["considers_alternatives"] = bool(re.search(
+            r'however|although|while|on the other hand|alternatively|conversely|but\s+\w',
+            response_lower
+        ))
+
+        # ===== 5. TASK-SPECIFIC METRICS =====
         if task["category"] == "prediction":
-            quality["has_prediction"] = any(word in response.lower() for word in ["increase", "decrease", "rise", "fall", "up", "down"])
-            quality["has_reasoning"] = any(word in response.lower() for word in ["because", "since", "due to", "based on"])
+            quality["has_clear_prediction"] = any(
+                word in response_lower for word in ["increase", "decrease", "rise", "fall", "up", "down", "grow", "decline"]
+            )
+            quality["prediction_confidence"] = bool(re.search(
+                r'\d+%\s+(confident|probability|chance|likely)|high confidence|low confidence|moderate confidence',
+                response_lower
+            ))
+            quality["has_price_target"] = bool(re.search(r'\$\d+.*target|target.*\$\d+', response_lower))
+            quality["timeframe_specified"] = bool(re.search(
+                r'next\s+\d+\s+(days?|weeks?|months?|quarters?|years?)|by\s+(19|20)\d{2}|within\s+\d+',
+                response_lower
+            ))
 
         elif task["category"] == "recommendation":
-            quality["has_recommendation"] = any(word in response.upper() for word in ["BUY", "SELL", "HOLD"])
-            quality["has_justification"] = len(response.split()) > 50
+            quality["has_clear_recommendation"] = any(
+                word in response.upper() for word in ["BUY", "SELL", "HOLD", "STRONG BUY", "STRONG SELL"]
+            )
+            quality["recommendation_strength"] = bool(re.search(r'strong\s+(buy|sell)', response_lower))
+            quality["has_price_target"] = bool(re.search(r'\$\d+.*target|target.*\$\d+', response_lower))
+            quality["justification_depth"] = len(words) > 100  # Substantial justification
+            quality["mentions_alternatives"] = bool(re.search(
+                r'alternative|other options|also consider|or\s+(buy|sell|hold)',
+                response_lower
+            ))
 
         elif task["category"] == "analysis":
-            quality["has_numbers"] = bool(re.search(r'\d+\.?\d*', response))
-            quality["has_analysis_keywords"] = any(word in response.lower() for word in ["ratio", "metric", "financial", "performance"])
+            quality["analysis_breadth"] = quality["financial_metrics_mentioned"]
+            quality["quantitative_analysis"] = quality["numerical_data_points"] > 5
+            quality["qualitative_analysis"] = bool(re.search(
+                r'strength|weakness|opportunity|threat|swot|competitive advantage|moat',
+                response_lower
+            ))
+            quality["trend_analysis"] = quality["temporal_comparisons"] > 0
+            quality["comprehensive_coverage"] = (
+                quality["financial_metrics_mentioned"] >= 3 and
+                quality["risk_factors_mentioned"] >= 2 and
+                quality["numerical_data_points"] >= 5
+            )
 
-        # Sentiment and confidence
-        quality["confident_language"] = any(word in response.lower() for word in ["strong", "significant", "clear", "definitely", "certainly"])
-        quality["hedging_language"] = any(word in response.lower() for word in ["may", "might", "possibly", "potentially", "could"])
+        # ===== 6. FACTUAL GROUNDING METRICS =====
+        # Specific dates
+        quality["specific_dates_mentioned"] = len(re.findall(
+            r'\d{1,2}/\d{1,2}/\d{2,4}|\d{4}-\d{2}-\d{2}|[A-Z][a-z]+\s+\d{1,2},?\s+\d{4}',
+            response
+        ))
+
+        # Company-specific vs generic
+        company_specific = [
+            'ceo', 'management', 'board', 'acquisition', 'merger', 'product launch',
+            'partnership', 'contract', 'lawsuit', 'regulatory', 'patent', 'innovation'
+        ]
+        quality["company_specific_mentions"] = sum(
+            1 for term in company_specific if term in response_lower
+        )
+
+        generic_terms = [
+            'stock market', 'economy', 'interest rates', 'inflation', 'generally',
+            'typically', 'usually', 'often', 'common'
+        ]
+        quality["generic_term_count"] = sum(1 for term in generic_terms if term in response_lower)
+        quality["specificity_score"] = (
+            quality["company_specific_mentions"] / max(quality["generic_term_count"], 1)
+        )
+
+        # ===== 7. LANGUAGE QUALITY METRICS =====
+        # Confidence indicators
+        confident_language = [
+            'will', 'certain', 'definitely', 'clearly', 'strong', 'significant',
+            'substantial', 'decisive', 'conclusive'
+        ]
+        quality["confident_language_count"] = sum(
+            1 for term in confident_language if term in response_lower
+        )
+
+        # Hedging/uncertainty
+        hedging_language = [
+            'may', 'might', 'could', 'possibly', 'potentially', 'perhaps',
+            'likely', 'probably', 'seems', 'appears', 'suggests'
+        ]
+        quality["hedging_language_count"] = sum(
+            1 for term in hedging_language if term in response_lower
+        )
+
+        quality["confidence_ratio"] = (
+            quality["confident_language_count"] / max(quality["hedging_language_count"], 1)
+        )
+
+        # Clarity
+        quality["avg_word_length"] = sum(len(w) for w in words) / len(words) if words else 0
+        quality["complex_sentences"] = sum(1 for s in sentences if len(s.split()) > 30)
+
+        # ===== 8. COMPREHENSIVENESS SCORE =====
+        # Calculate overall comprehensiveness based on multiple factors
+        comprehensiveness_factors = [
+            quality["financial_metrics_mentioned"] >= 3,
+            quality["numerical_data_points"] >= 5,
+            quality["risk_factors_mentioned"] >= 2,
+            quality["causal_chains"] >= 2,
+            quality["evidence_markers"] >= 2,
+            quality["word_count"] >= 150,
+            quality["data_sources_mentioned"] >= 1,
+            quality.get("has_future_projection", False),
+            quality.get("peer_comparison", False),
+        ]
+        quality["comprehensiveness_score"] = sum(1 for factor in comprehensiveness_factors if factor)
+        quality["comprehensiveness_percentage"] = (
+            quality["comprehensiveness_score"] / len(comprehensiveness_factors) * 100
+        )
 
         return quality
 
