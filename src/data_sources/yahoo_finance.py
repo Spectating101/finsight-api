@@ -20,10 +20,10 @@ from datetime import datetime, timedelta
 import asyncio
 from functools import lru_cache
 
-from .base import DataSource
+from .base import DataSourcePlugin
 
 
-class YahooFinanceSource(DataSource):
+class YahooFinanceSource(DataSourcePlugin):
     """Yahoo Finance data source implementation"""
 
     def __init__(self, cache_ttl: int = 300):

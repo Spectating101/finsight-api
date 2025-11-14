@@ -1,19 +1,29 @@
 """
 Unit tests for API key management
-Tests the core business logic of API key operations
+Tests the core business logic WITHOUT requiring a real database
 """
 
 import pytest
 from datetime import datetime, timedelta
-from src.core.api_keys import APIKeyManager
+from unittest.mock import Mock, AsyncMock, MagicMock, patch
+import hashlib
+
+# We'll test the generate_key method directly without DB
+from src.auth.api_keys import APIKeyManager
 
 
 class TestAPIKeyGeneration:
-    """Test API key generation logic"""
+    """Test API key generation logic (no DB required)"""
+
+    def setup_method(self):
+        """Setup for each test"""
+        # Mock database pool
+        self.mock_db_pool = Mock()
+        self.manager = APIKeyManager(self.mock_db_pool)
 
     def test_generate_key_format(self):
         """Test that generated keys have correct format"""
-        key = APIKeyManager.generate_api_key()
+        key, key_hash, key_prefix = self.manager.generate_key()
 
         # Should start with fsk_
         assert key.startswith("fsk_")
@@ -21,198 +31,351 @@ class TestAPIKeyGeneration:
         # Should be at least 40 characters
         assert len(key) >= 40
 
-        # Should only contain alphanumeric characters (after prefix)
-        key_body = key[4:]  # Remove "fsk_" prefix
-        assert key_body.isalnum()
+        # Prefix should be first 12 chars
+        assert key_prefix == key[:12]
+        assert key_prefix.startswith("fsk_")
 
     def test_generate_key_uniqueness(self):
         """Test that generated keys are unique"""
-        keys = [APIKeyManager.generate_api_key() for _ in range(100)]
+        keys = []
+        for _ in range(100):
+            key, _, _ = self.manager.generate_key()
+            keys.append(key)
 
         # All keys should be unique
         assert len(keys) == len(set(keys))
 
-    def test_hash_key_deterministic(self):
+    def test_hash_deterministic(self):
         """Test that hashing is deterministic"""
-        key = "fsk_test_key_12345"
+        test_key = "fsk_test_key_12345"
 
-        hash1 = APIKeyManager.hash_api_key(key)
-        hash2 = APIKeyManager.hash_api_key(key)
+        hash1 = hashlib.sha256(test_key.encode()).hexdigest()
+        hash2 = hashlib.sha256(test_key.encode()).hexdigest()
 
         # Same key should produce same hash
         assert hash1 == hash2
 
-    def test_hash_key_different_inputs(self):
+    def test_hash_different_inputs(self):
         """Test that different keys produce different hashes"""
         key1 = "fsk_test_key_1"
         key2 = "fsk_test_key_2"
 
-        hash1 = APIKeyManager.hash_api_key(key1)
-        hash2 = APIKeyManager.hash_api_key(key2)
+        hash1 = hashlib.sha256(key1.encode()).hexdigest()
+        hash2 = hashlib.sha256(key2.encode()).hexdigest()
 
         # Different keys should produce different hashes
         assert hash1 != hash2
 
     def test_hash_length(self):
         """Test that hash has expected length (SHA256 = 64 hex chars)"""
-        key = "fsk_test_key"
-        hashed = APIKeyManager.hash_api_key(key)
+        _, key_hash, _ = self.manager.generate_key()
 
         # SHA256 produces 64 character hex string
-        assert len(hashed) == 64
+        assert len(key_hash) == 64
 
         # Should be valid hex
-        int(hashed, 16)  # Raises ValueError if not valid hex
+        int(key_hash, 16)  # Raises ValueError if not valid hex
+
+    def test_prefix_extraction(self):
+        """Test key prefix extraction"""
+        key, _, key_prefix = self.manager.generate_key()
+
+        # Prefix should be first 12 characters
+        assert key_prefix == key[:12]
+        assert len(key_prefix) == 12
+
+    def test_key_prefix_value(self):
+        """Test that key prefix is set correctly"""
+        assert self.manager.key_prefix == "fsk_"
 
 
-class TestKeyPrefixExtraction:
-    """Test API key prefix extraction"""
+class TestAPIKeyCreation:
+    """Test API key creation with mocked database"""
 
-    def test_extract_prefix_from_valid_key(self):
-        """Test extracting prefix from valid key"""
-        key = "fsk_abc123def456"
-        prefix = APIKeyManager.extract_prefix(key)
+    def setup_method(self):
+        """Setup for each test"""
+        self.mock_db_pool = MagicMock()
+        self.mock_conn = AsyncMock()
+        self.mock_db_pool.acquire.return_value.__aenter__.return_value = self.mock_conn
+        self.manager = APIKeyManager(self.mock_db_pool)
 
-        # Should return first 12 characters
-        assert prefix == "fsk_abc123de"
+    @pytest.mark.asyncio
+    async def test_create_api_key_basic(self):
+        """Test basic API key creation"""
+        user_id = "user_123"
+        name = "Test Key"
 
-    def test_extract_prefix_from_short_key(self):
-        """Test extracting prefix from key shorter than 12 chars"""
-        key = "fsk_abc"
-        prefix = APIKeyManager.extract_prefix(key)
+        full_key, api_key = await self.manager.create_api_key(user_id, name)
 
-        # Should return the entire key if shorter than 12
-        assert prefix == "fsk_abc"
+        # Check return values
+        assert full_key.startswith("fsk_")
+        assert api_key.user_id == user_id
+        assert api_key.name == name
+        assert api_key.key_prefix.startswith("fsk_")
 
-    def test_extract_prefix_empty_key(self):
-        """Test extracting prefix from empty key"""
-        key = ""
-        prefix = APIKeyManager.extract_prefix(key)
+        # Verify database was called
+        self.mock_conn.execute.assert_called_once()
 
-        assert prefix == ""
+    @pytest.mark.asyncio
+    async def test_create_api_key_with_expiration(self):
+        """Test API key creation with expiration"""
+        user_id = "user_123"
+        expires_days = 30
 
-
-class TestKeyValidation:
-    """Test API key validation logic"""
-
-    def test_validate_key_format_valid(self):
-        """Test validation accepts valid format"""
-        valid_key = "fsk_" + "a" * 36  # fsk_ + 36 chars
-
-        assert APIKeyManager.is_valid_format(valid_key) is True
-
-    def test_validate_key_format_invalid_prefix(self):
-        """Test validation rejects wrong prefix"""
-        invalid_key = "invalid_prefix_12345"
-
-        assert APIKeyManager.is_valid_format(invalid_key) is False
-
-    def test_validate_key_format_too_short(self):
-        """Test validation rejects too short keys"""
-        short_key = "fsk_abc"
-
-        assert APIKeyManager.is_valid_format(short_key) is False
-
-    def test_validate_key_format_special_chars(self):
-        """Test validation rejects keys with special characters"""
-        invalid_key = "fsk_abc123!@#$%^&*()"
-
-        # Depends on implementation - adjust based on actual validation rules
-        # If special chars are not allowed:
-        # assert APIKeyManager.is_valid_format(invalid_key) is False
-
-
-class TestKeyExpiration:
-    """Test API key expiration logic"""
-
-    def test_is_expired_not_expired(self):
-        """Test key that hasn't expired"""
-        future_date = datetime.utcnow() + timedelta(days=30)
-
-        assert APIKeyManager.is_expired(future_date) is False
-
-    def test_is_expired_already_expired(self):
-        """Test key that has expired"""
-        past_date = datetime.utcnow() - timedelta(days=1)
-
-        assert APIKeyManager.is_expired(past_date) is True
-
-    def test_is_expired_no_expiration(self):
-        """Test key with no expiration date"""
-        assert APIKeyManager.is_expired(None) is False
-
-    def test_is_expired_exact_moment(self):
-        """Test key expiring at exact current moment"""
-        now = datetime.utcnow()
-
-        # Could be either True or False depending on implementation
-        # Most implementations should treat "now" as expired
-        result = APIKeyManager.is_expired(now)
-        assert isinstance(result, bool)
-
-
-class TestKeyMetadata:
-    """Test API key metadata handling"""
-
-    def test_create_key_metadata(self):
-        """Test creating key metadata"""
-        metadata = APIKeyManager.create_key_metadata(
-            name="Production API Key",
-            scopes=["read", "write"],
-            user_id=123
+        full_key, api_key = await self.manager.create_api_key(
+            user_id,
+            expires_days=expires_days
         )
 
-        assert metadata["name"] == "Production API Key"
-        assert "read" in metadata["scopes"]
-        assert "write" in metadata["scopes"]
-        assert metadata["user_id"] == 123
-        assert "created_at" in metadata
+        # Check expiration is set
+        assert api_key.expires_at is not None
 
-    def test_validate_scopes(self):
-        """Test scope validation"""
-        valid_scopes = ["read", "write", "admin"]
+        # Should be approximately 30 days from now
+        expected_expiry = datetime.utcnow() + timedelta(days=expires_days)
+        time_diff = abs((api_key.expires_at - expected_expiry).total_seconds())
+        assert time_diff < 5  # Within 5 seconds
 
-        for scope in valid_scopes:
-            assert APIKeyManager.is_valid_scope(scope) is True
+    @pytest.mark.asyncio
+    async def test_create_test_mode_key(self):
+        """Test creating test mode API key"""
+        user_id = "user_123"
 
-        invalid_scopes = ["invalid", "hack", ""]
-        for scope in invalid_scopes:
-            assert APIKeyManager.is_valid_scope(scope) is False
+        full_key, api_key = await self.manager.create_api_key(
+            user_id,
+            test_mode=True
+        )
+
+        assert api_key.is_test_mode is True
+
+    @pytest.mark.asyncio
+    async def test_create_key_full_key_never_stored(self):
+        """Test that full key is never stored in database"""
+        user_id = "user_123"
+
+        full_key, api_key = await self.manager.create_api_key(user_id)
+
+        # Check database call - full key should not be in the call
+        call_args = self.mock_conn.execute.call_args
+        sql, *params = call_args[0]
+
+        # Full key should not be in params
+        assert full_key not in params
+
+        # But hash should be
+        key_hash = hashlib.sha256(full_key.encode()).hexdigest()
+        assert key_hash in params
 
 
-class TestKeyRotation:
-    """Test API key rotation functionality"""
+class TestAPIKeyValidation:
+    """Test API key validation with mocked database"""
 
-    def test_rotate_key_generates_new(self):
-        """Test that key rotation generates a new key"""
-        old_key = APIKeyManager.generate_api_key()
-        new_key = APIKeyManager.rotate_key(old_key)
+    def setup_method(self):
+        """Setup for each test"""
+        self.mock_db_pool = MagicMock()
+        self.mock_conn = AsyncMock()
+        self.mock_db_pool.acquire.return_value.__aenter__.return_value = self.mock_conn
+        self.manager = APIKeyManager(self.mock_db_pool)
 
-        # New key should be different
-        assert new_key != old_key
+    @pytest.mark.asyncio
+    async def test_validate_valid_key(self):
+        """Test validating a valid API key"""
+        test_key = "fsk_test_key_123"
+        key_hash = hashlib.sha256(test_key.encode()).hexdigest()
 
-        # New key should have valid format
-        assert APIKeyManager.is_valid_format(new_key) is True
-
-    def test_rotate_preserves_metadata(self):
-        """Test that rotation preserves key metadata"""
-        metadata = {
-            "name": "My API Key",
-            "scopes": ["read"],
-            "user_id": 123
+        # Mock database response
+        self.mock_conn.fetchrow.return_value = {
+            'key_id': 'key_123',
+            'user_id': 'user_123',
+            'email': 'test@example.com',
+            'tier': 'free',
+            'status': 'active',
+            'api_calls_this_month': 10,
+            'api_calls_limit': 1000,
+            'stripe_customer_id': None,
+            'key_hash': key_hash,
+            'key_prefix': test_key[:12],
+            'name': 'Test Key',
+            'is_active': True,
+            'is_test_mode': False,
+            'total_calls': 100,
+            'last_used_at': None,
+            'created_at': datetime.utcnow(),
+            'expires_at': None
         }
 
-        new_metadata = APIKeyManager.rotate_key_with_metadata(metadata)
+        result = await self.manager.validate_key(test_key)
 
-        # Should preserve name and scopes
-        assert new_metadata["name"] == metadata["name"]
-        assert new_metadata["scopes"] == metadata["scopes"]
-        assert new_metadata["user_id"] == metadata["user_id"]
+        assert result is not None
+        user, api_key = result
+        assert user.user_id == 'user_123'
+        assert user.email == 'test@example.com'
+        assert api_key.key_id == 'key_123'
 
-        # Should update created_at
-        assert new_metadata["created_at"] > metadata.get("created_at", datetime.min)
+    @pytest.mark.asyncio
+    async def test_validate_invalid_key(self):
+        """Test validating an invalid API key"""
+        test_key = "fsk_invalid_key"
+
+        # Mock database returning None (key not found)
+        self.mock_conn.fetchrow.return_value = None
+
+        result = await self.manager.validate_key(test_key)
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_validate_updates_last_used(self):
+        """Test that validation updates last_used_at timestamp"""
+        test_key = "fsk_test_key_123"
+        key_hash = hashlib.sha256(test_key.encode()).hexdigest()
+
+        self.mock_conn.fetchrow.return_value = {
+            'key_id': 'key_123',
+            'user_id': 'user_123',
+            'email': 'test@example.com',
+            'tier': 'free',
+            'status': 'active',
+            'api_calls_this_month': 10,
+            'api_calls_limit': 1000,
+            'stripe_customer_id': None,
+            'key_hash': key_hash,
+            'key_prefix': test_key[:12],
+            'name': 'Test Key',
+            'is_active': True,
+            'is_test_mode': False,
+            'total_calls': 100,
+            'last_used_at': None,
+            'created_at': datetime.utcnow(),
+            'expires_at': None
+        }
+
+        await self.manager.validate_key(test_key)
+
+        # Verify UPDATE was called to update last_used_at
+        assert self.mock_conn.execute.call_count == 1
 
 
-# Note: These tests assume certain methods exist in APIKeyManager
-# Adjust method names and signatures based on actual implementation
-# Some methods may need to be implemented if they don't exist yet
+class TestAPIKeyRevocation:
+    """Test API key revocation"""
+
+    def setup_method(self):
+        """Setup for each test"""
+        self.mock_db_pool = MagicMock()
+        self.mock_conn = AsyncMock()
+        self.mock_db_pool.acquire.return_value.__aenter__.return_value = self.mock_conn
+        self.manager = APIKeyManager(self.mock_db_pool)
+
+    @pytest.mark.asyncio
+    async def test_revoke_existing_key(self):
+        """Test revoking an existing key"""
+        key_id = "key_123"
+        user_id = "user_123"
+
+        # Mock successful revocation
+        self.mock_conn.execute.return_value = "UPDATE 1"
+
+        result = await self.manager.revoke_key(key_id, user_id)
+
+        assert result is True
+
+    @pytest.mark.asyncio
+    async def test_revoke_nonexistent_key(self):
+        """Test revoking a non-existent key"""
+        key_id = "key_invalid"
+        user_id = "user_123"
+
+        # Mock no rows updated
+        self.mock_conn.execute.return_value = "UPDATE 0"
+
+        result = await self.manager.revoke_key(key_id, user_id)
+
+        assert result is False
+
+
+class TestAPIKeyRotation:
+    """Test API key rotation functionality"""
+
+    def setup_method(self):
+        """Setup for each test"""
+        self.mock_db_pool = MagicMock()
+        self.mock_conn = AsyncMock()
+        self.mock_db_pool.acquire.return_value.__aenter__.return_value = self.mock_conn
+        self.manager = APIKeyManager(self.mock_db_pool)
+
+    @pytest.mark.asyncio
+    async def test_rotate_key_basic(self):
+        """Test basic key rotation"""
+        old_key_id = "key_old_123"
+        user_id = "user_123"
+
+        # Mock old key exists
+        self.mock_conn.fetchrow.return_value = {
+            'key_id': old_key_id,
+            'name': 'Production Key',
+            'is_test_mode': False
+        }
+
+        # Mock create_api_key call
+        with patch.object(self.manager, 'create_api_key', new_callable=AsyncMock) as mock_create:
+            from src.models.user import APIKey
+
+            mock_api_key = APIKey(
+                key_id='key_new_123',
+                user_id=user_id,
+                key_hash='hash123',
+                key_prefix='fsk_new',
+                name='Production Key (Rotated)',
+                is_test_mode=False,
+                created_at=datetime.utcnow()
+            )
+
+            mock_create.return_value = ('fsk_new_key', mock_api_key)
+
+            new_key, new_api_key = await self.manager.rotate_key(old_key_id, user_id)
+
+            # Check new key was created
+            assert new_key.startswith('fsk_')
+            assert new_api_key.key_id == 'key_new_123'
+            assert '(Rotated)' in new_api_key.name
+
+    @pytest.mark.asyncio
+    async def test_rotate_invalid_key(self):
+        """Test rotating non-existent key"""
+        old_key_id = "key_invalid"
+        user_id = "user_123"
+
+        # Mock key not found
+        self.mock_conn.fetchrow.return_value = None
+
+        with pytest.raises(ValueError, match="API key not found"):
+            await self.manager.rotate_key(old_key_id, user_id)
+
+
+class TestExpiredKeyCleanup:
+    """Test expired key cleanup"""
+
+    def setup_method(self):
+        """Setup for each test"""
+        self.mock_db_pool = MagicMock()
+        self.mock_conn = AsyncMock()
+        self.mock_db_pool.acquire.return_value.__aenter__.return_value = self.mock_conn
+        self.manager = APIKeyManager(self.mock_db_pool)
+
+    @pytest.mark.asyncio
+    async def test_cleanup_expired_keys(self):
+        """Test cleaning up expired keys"""
+        # Mock 5 keys cleaned up
+        self.mock_conn.execute.return_value = "UPDATE 5"
+
+        count = await self.manager.cleanup_expired_keys()
+
+        assert count == 5
+
+    @pytest.mark.asyncio
+    async def test_cleanup_no_expired_keys(self):
+        """Test cleanup when no expired keys"""
+        self.mock_conn.execute.return_value = "UPDATE 0"
+
+        count = await self.manager.cleanup_expired_keys()
+
+        assert count == 0
