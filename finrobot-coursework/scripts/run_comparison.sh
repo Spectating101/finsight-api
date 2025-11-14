@@ -9,13 +9,15 @@ source .venv/bin/activate 2>/dev/null || true
 
 # Config
 MODEL="${MODEL:-llama-3.3-70b}"
-TICKERS="${TICKERS:-AAPL TSLA JPM XOM}"
+# Expanded to 30 companies for publication-quality sample size
+TICKERS="${TICKERS:-AAPL MSFT GOOGL NVDA AMD JPM BAC WFC GS MS XOM CVX COP SLB OXY JNJ UNH PFE ABBV TMO TSLA WMT HD NKE MCD BA CAT GE UPS HON}"
 TEMP="${TEMP:-0.2}"
 
 echo "=============================================="
-echo "  FinRobot Comparison Study"
+echo "  FinRobot Comparison Study (Publication)"
 echo "  Model: $MODEL"
-echo "  Tickers: $TICKERS"
+echo "  Companies: 30 (6 sectors × 5 each)"
+echo "  Temperature: $TEMP"
 echo "=============================================="
 echo ""
 
@@ -55,10 +57,10 @@ python scripts/run_zeroshot.py $TICKERS \
     --temperature $TEMP \
     --output scripts/results_zeroshot.json
 
-# Analyze
+# Analyze with statistics
 echo ""
-echo "Analyzing results..."
-python scripts/analyze.py
+echo "Analyzing results with statistical testing..."
+python scripts/analyze_with_statistics.py
 
 echo ""
 echo "=============================================="
