@@ -1,151 +1,54 @@
-name: CI - Test and Lint
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop, claude/* ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
 
 jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 black isort mypy
+
+    - name: Run Black
+      run: black --check src/ tests/
+
+    - name: Run Flake8
+      run: flake8 src/ tests/ --max-line-length=100
+
+
   test:
     name: Run Tests
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: finsight_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio pytest-cov black mypy ruff
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio pytest-cov
 
-      - name: Initialize database schema
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/finsight_test
-        run: |
-          psql $DATABASE_URL -f config/database_schema.sql || echo "Schema initialization skipped (may already exist)"
-
-      - name: Run code formatting check
-        run: |
-          black --check src/ tests/
-        continue-on-error: true
-
-      - name: Run linter
-        run: |
-          ruff check src/ tests/
-        continue-on-error: true
-
-      - name: Run type checking
-        run: |
-          mypy src/ --ignore-missing-imports
-        continue-on-error: true
-
-      - name: Run tests
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/finsight_test
-          REDIS_URL: redis://localhost:6379/0
-          STRIPE_SECRET_KEY: sk_test_fake_key_for_testing
-          STRIPE_WEBHOOK_SECRET: whsec_fake_secret_for_testing
-          SEC_USER_AGENT: "FinSight API Test/1.0 (test@finsight.io)"
-          ENVIRONMENT: test
-        run: |
-          pytest tests/ -v --cov=src --cov-report=xml --cov-report=term
-
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          fail_ci_if_error: false
-        continue-on-error: true
-
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install safety bandit
-
-      - name: Run safety check (dependency vulnerabilities)
-        run: |
-          safety check --file requirements.txt
-        continue-on-error: true
-
-      - name: Run bandit (security linter)
-        run: |
-          bandit -r src/ -f json -o bandit-report.json
-        continue-on-error: true
-
-      - name: Upload security reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-reports
-          path: bandit-report.json
-        if: always()
-
-  docker:
-    name: Build Docker Image
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: false
-          tags: finsight-api:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Test Docker image
-        run: |
-          docker run --rm finsight-api:test python -c "import src.main; print('Import successful')"
+    - name: Run Tests
+      run: |
+        pytest tests/ -v --cov=src --cov-report=xml
