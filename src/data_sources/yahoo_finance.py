@@ -6,8 +6,7 @@ Capabilities:
 - Real-time stock quotes
 - Historical price data
 - Market statistics (P/E, Beta, Market Cap, etc.)
-- Dividends and splits
-- Intraday data
+- Company information
 
 Rate Limits:
 - 2,000 requests/hour
@@ -15,73 +14,74 @@ Rate Limits:
 """
 
 import yfinance as yf
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
-import asyncio
-from functools import lru_cache
 
-from .base import DataSourcePlugin
+from .base import (
+    DataSourcePlugin,
+    DataSourceType,
+    DataSourceCapability,
+    FinancialData
+)
 
 
 class YahooFinanceSource(DataSourcePlugin):
     """Yahoo Finance data source implementation"""
 
-    def __init__(self, cache_ttl: int = 300):
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         Initialize Yahoo Finance source
 
         Args:
-            cache_ttl: Cache time-to-live in seconds (default: 5 minutes)
+            config: Optional configuration dict
+                - cache_ttl: Cache time-to-live in seconds (default: 300)
         """
-        super().__init__(name="Yahoo Finance", source_type="market_data")
-        self.cache_ttl = cache_ttl
+        if config is None:
+            config = {}
+
+        super().__init__(config)
+
+        self.cache_ttl = config.get('cache_ttl', 300)  # 5 minutes default
         self._cache = {}
 
-    @property
-    def available_metrics(self) -> List[str]:
-        """List of available metrics from Yahoo Finance"""
+    def get_source_type(self) -> DataSourceType:
+        """Return source type identifier"""
+        return DataSourceType.YAHOO_FINANCE
+
+    def get_capabilities(self) -> List[DataSourceCapability]:
+        """Return list of capabilities"""
         return [
-            "current_price",
-            "previous_close",
-            "open",
-            "day_high",
-            "day_low",
-            "volume",
-            "market_cap",
-            "pe_ratio",
-            "forward_pe",
-            "peg_ratio",
-            "price_to_book",
-            "dividend_yield",
-            "beta",
-            "52_week_high",
-            "52_week_low",
-            "50_day_avg",
-            "200_day_avg",
-            "avg_volume",
-            "shares_outstanding"
+            DataSourceCapability.MARKET_DATA,
+            DataSourceCapability.REAL_TIME,
+            DataSourceCapability.HISTORICAL
         ]
 
-    async def get_metric(self, ticker: str, metric_name: str) -> Dict:
+    def get_rate_limit(self) -> Optional[int]:
+        """Yahoo Finance rate limit: ~2000 requests/hour = ~33/minute"""
+        return 33
+
+    async def get_financial_data(
+        self,
+        ticker: str,
+        concepts: List[str],
+        period: Optional[str] = None
+    ) -> List[FinancialData]:
         """
-        Get a single metric for a ticker
+        Fetch financial data for given ticker and concepts
 
         Args:
             ticker: Stock ticker symbol
-            metric_name: Name of metric to retrieve
+            concepts: List of concepts (e.g., ["current_price", "market_cap"])
+            period: Optional period (not used for Yahoo, always current)
 
         Returns:
-            Dictionary with value, unit, date, and citation
-
-        Example:
-            data = await source.get_metric("AAPL", "current_price")
-            # {'value': 150.23, 'unit': 'USD', 'date': '2024-01-15', 'citation': {...}}
+            List of FinancialData objects
         """
-        # Get full stock info (cached)
+        results = []
         stock_data = await self._get_stock_info(ticker)
 
-        # Extract requested metric
-        metric_map = {
+        # Map concepts to Yahoo Finance fields
+        concept_map = {
             "current_price": "regularMarketPrice",
             "previous_close": "previousClose",
             "open": "regularMarketOpen",
@@ -103,156 +103,103 @@ class YahooFinanceSource(DataSourcePlugin):
             "shares_outstanding": "sharesOutstanding"
         }
 
-        yf_key = metric_map.get(metric_name)
-        if not yf_key:
-            raise ValueError(f"Unknown metric: {metric_name}")
+        for concept in concepts:
+            yf_field = concept_map.get(concept)
+            if not yf_field:
+                continue  # Skip unknown concepts
 
-        value = stock_data.get(yf_key)
-        if value is None:
-            raise ValueError(f"Metric not available: {metric_name}")
+            value = stock_data.get(yf_field)
+            if value is None:
+                continue  # Skip missing data
 
-        # Determine unit
-        if metric_name in ["market_cap", "shares_outstanding"]:
-            unit = "count"
-        elif metric_name in ["dividend_yield"]:
-            unit = "percentage"
-        elif metric_name in ["volume", "avg_volume"]:
-            unit = "shares"
-        else:
-            unit = "USD"
+            # Determine unit
+            if concept in ["market_cap", "shares_outstanding"]:
+                unit = "shares"
+            elif concept in ["dividend_yield"]:
+                unit = "percent"
+            elif concept in ["volume", "avg_volume"]:
+                unit = "count"
+            else:
+                unit = "USD"
 
-        return {
-            "value": value,
-            "unit": unit,
-            "date": datetime.now().strftime("%Y-%m-%d"),
-            "citation": {
-                "source": "Yahoo Finance",
-                "url": f"https://finance.yahoo.com/quote/{ticker}",
-                "timestamp": datetime.now().isoformat()
-            }
-        }
+            # Create FinancialData object
+            financial_data = FinancialData(
+                source=DataSourceType.YAHOO_FINANCE,
+                ticker=ticker,
+                concept=concept,
+                value=float(value),
+                unit=unit,
+                period="current",  # Yahoo Finance is always current
+                period_type="instant",
+                citation={
+                    "source": "Yahoo Finance",
+                    "url": f"https://finance.yahoo.com/quote/{ticker}",
+                    "timestamp": datetime.now().isoformat()
+                },
+                retrieved_at=datetime.now(),
+                confidence=0.95  # Yahoo Finance is generally reliable
+            )
 
-    async def get_historical_data(
-        self,
-        ticker: str,
-        period: str = "1mo",
-        interval: str = "1d"
-    ) -> Dict:
+            results.append(financial_data)
+
+        return results
+
+    async def search_companies(self, query: str) -> List[Dict[str, Any]]:
         """
-        Get historical price data
+        Search for companies (limited in Yahoo Finance)
 
         Args:
-            ticker: Stock ticker symbol
-            period: Data period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max)
-            interval: Data interval (1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo)
+            query: Search query (ticker symbol)
 
         Returns:
-            Historical price data with OHLCV
+            List of company info dicts
 
-        Example:
-            history = await source.get_historical_data("AAPL", period="1mo", interval="1d")
+        Note: Yahoo Finance doesn't have a search API, so we just
+        try to fetch info for the ticker if it looks like one
         """
-        stock = yf.Ticker(ticker)
-        history = stock.history(period=period, interval=interval)
-
-        if history.empty:
-            raise ValueError(f"No historical data available for {ticker}")
-
-        # Convert to dict format
-        data = {
-            "ticker": ticker,
-            "period": period,
-            "interval": interval,
-            "data": []
-        }
-
-        for date, row in history.iterrows():
-            data["data"].append({
-                "date": date.strftime("%Y-%m-%d"),
-                "open": float(row["Open"]),
-                "high": float(row["High"]),
-                "low": float(row["Low"]),
-                "close": float(row["Close"]),
-                "volume": int(row["Volume"])
-            })
-
-        return data
-
-    async def get_company_info(self, ticker: str) -> Dict:
-        """
-        Get company information
-
-        Args:
-            ticker: Stock ticker symbol
-
-        Returns:
-            Company information including name, sector, industry, etc.
-        """
-        stock_data = await self._get_stock_info(ticker)
-
-        return {
-            "ticker": ticker,
-            "name": stock_data.get("longName", ticker),
-            "sector": stock_data.get("sector"),
-            "industry": stock_data.get("industry"),
-            "description": stock_data.get("longBusinessSummary"),
-            "website": stock_data.get("website"),
-            "employees": stock_data.get("fullTimeEmployees"),
-            "city": stock_data.get("city"),
-            "state": stock_data.get("state"),
-            "country": stock_data.get("country")
-        }
-
-    async def get_dividends(self, ticker: str) -> List[Dict]:
-        """
-        Get dividend history
-
-        Args:
-            ticker: Stock ticker symbol
-
-        Returns:
-            List of dividend payments
-        """
-        stock = yf.Ticker(ticker)
-        dividends = stock.dividends
-
-        if dividends.empty:
+        # Basic validation - if it looks like a ticker, try it
+        if not query or len(query) > 5:
             return []
 
-        return [
-            {
-                "date": date.strftime("%Y-%m-%d"),
-                "amount": float(amount)
-            }
-            for date, amount in dividends.items()
-        ]
+        ticker = query.upper()
 
-    async def get_splits(self, ticker: str) -> List[Dict]:
+        try:
+            stock_data = await self._get_stock_info(ticker)
+
+            return [{
+                'ticker': ticker,
+                'name': stock_data.get('longName', ticker),
+                'sector': stock_data.get('sector'),
+                'industry': stock_data.get('industry'),
+                'source': 'yahoo_finance'
+            }]
+        except Exception:
+            return []
+
+    async def health_check(self) -> bool:
         """
-        Get stock split history
+        Check if Yahoo Finance is accessible
+
+        Returns:
+            True if healthy, False otherwise
+        """
+        try:
+            # Try to fetch data for a well-known ticker
+            stock_data = await self._get_stock_info("AAPL")
+            return 'regularMarketPrice' in stock_data
+        except Exception:
+            return False
+
+    async def _get_stock_info(self, ticker: str) -> Dict[str, Any]:
+        """
+        Get stock info with caching
 
         Args:
             ticker: Stock ticker symbol
 
         Returns:
-            List of stock splits
+            Stock info dictionary
         """
-        stock = yf.Ticker(ticker)
-        splits = stock.splits
-
-        if splits.empty:
-            return []
-
-        return [
-            {
-                "date": date.strftime("%Y-%m-%d"),
-                "ratio": float(ratio)
-            }
-            for date, ratio in splits.items()
-        ]
-
-    async def _get_stock_info(self, ticker: str) -> Dict:
-        """Get stock info with caching"""
         cache_key = f"{ticker}_info"
 
         # Check cache
@@ -274,86 +221,64 @@ class YahooFinanceSource(DataSourcePlugin):
         except Exception as e:
             raise ValueError(f"Failed to fetch data for {ticker}: {str(e)}")
 
-    async def search_ticker(self, query: str) -> List[Dict]:
+    async def get_historical_data(
+        self,
+        ticker: str,
+        period: str = "1mo",
+        interval: str = "1d"
+    ) -> List[Dict[str, Any]]:
         """
-        Search for ticker by company name
+        Get historical price data (convenience method)
 
         Args:
-            query: Company name or partial ticker
+            ticker: Stock ticker symbol
+            period: Data period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max)
+            interval: Data interval (1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo)
 
         Returns:
-            List of matching tickers
-
-        Note: Yahoo Finance doesn't have a search API, so this uses yfinance's
-        Ticker.info to validate tickers. For production, consider using a
-        dedicated ticker search service.
+            Historical price data with OHLCV
         """
-        # This is a basic implementation
-        # For production, use a proper search index or external service
-        potential_ticker = query.upper()
+        stock = yf.Ticker(ticker)
+        history = stock.history(period=period, interval=interval)
 
-        try:
-            stock_data = await self._get_stock_info(potential_ticker)
-            return [{
-                "ticker": potential_ticker,
-                "name": stock_data.get("longName"),
-                "sector": stock_data.get("sector")
-            }]
+        if history.empty:
+            raise ValueError(f"No historical data available for {ticker}")
 
-        except Exception:
-            return []
+        # Convert to list of dicts
+        data = []
+        for date, row in history.iterrows():
+            data.append({
+                "date": date.strftime("%Y-%m-%d"),
+                "open": float(row["Open"]),
+                "high": float(row["High"]),
+                "low": float(row["Low"]),
+                "close": float(row["Close"]),
+                "volume": int(row["Volume"])
+            })
 
-    def calculate_returns(self, historical_data: Dict) -> Dict:
+        return data
+
+    async def get_company_info(self, ticker: str) -> Dict[str, Any]:
         """
-        Calculate returns from historical data
+        Get company information (convenience method)
 
         Args:
-            historical_data: Historical price data from get_historical_data()
+            ticker: Stock ticker symbol
 
         Returns:
-            Dictionary with various return calculations
+            Company information dictionary
         """
-        if not historical_data.get("data"):
-            raise ValueError("No historical data provided")
-
-        prices = [day["close"] for day in historical_data["data"]]
-
-        if len(prices) < 2:
-            raise ValueError("Need at least 2 data points to calculate returns")
-
-        # Simple return
-        total_return = ((prices[-1] - prices[0]) / prices[0]) * 100
-
-        # Daily returns
-        daily_returns = []
-        for i in range(1, len(prices)):
-            daily_return = ((prices[i] - prices[i-1]) / prices[i-1]) * 100
-            daily_returns.append(daily_return)
-
-        # Calculate volatility (standard deviation of daily returns)
-        import statistics
-        volatility = statistics.stdev(daily_returns) if len(daily_returns) > 1 else 0
+        stock_data = await self._get_stock_info(ticker)
 
         return {
-            "total_return_pct": total_return,
-            "daily_returns": daily_returns,
-            "volatility": volatility,
-            "start_price": prices[0],
-            "end_price": prices[-1],
-            "num_days": len(prices)
+            "ticker": ticker,
+            "name": stock_data.get("longName", ticker),
+            "sector": stock_data.get("sector"),
+            "industry": stock_data.get("industry"),
+            "description": stock_data.get("longBusinessSummary"),
+            "website": stock_data.get("website"),
+            "employees": stock_data.get("fullTimeEmployees"),
+            "city": stock_data.get("city"),
+            "state": stock_data.get("state"),
+            "country": stock_data.get("country")
         }
-
-
-# Convenience functions for direct use
-async def get_current_price(ticker: str) -> float:
-    """Quick helper to get current price"""
-    source = YahooFinanceSource()
-    data = await source.get_metric(ticker, "current_price")
-    return data["value"]
-
-
-async def get_market_cap(ticker: str) -> float:
-    """Quick helper to get market cap"""
-    source = YahooFinanceSource()
-    data = await source.get_metric(ticker, "market_cap")
-    return data["value"]

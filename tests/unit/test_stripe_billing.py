@@ -127,8 +127,9 @@ class TestStripeWebhooks:
     @patch('stripe.Webhook.construct_event')
     async def test_handle_webhook_signature_verification(self, mock_construct):
         """Test webhook signature verification"""
-        # Mock Stripe event
+        # Mock Stripe event (must include 'id' and 'type' fields)
         mock_construct.return_value = {
+            'id': 'evt_test_123',
             'type': 'customer.subscription.created',
             'data': {'object': {'id': 'sub_test'}}
         }
@@ -166,9 +167,10 @@ class TestSubscriptionManagement:
         """Test canceling a subscription"""
         user_id = "user_123"
 
-        # Mock user with subscription
+        # Mock user with subscription (needs both stripe_subscription_id and tier)
         self.mock_conn.fetchrow.return_value = {
-            'stripe_subscription_id': 'sub_test123'
+            'stripe_subscription_id': 'sub_test123',
+            'tier': 'professional'
         }
 
         with patch('stripe.Subscription.modify') as mock_modify:

@@ -234,19 +234,20 @@ class StripeManager:
                     INSERT INTO webhook_events (event_id, event_type, payload)
                     VALUES ($1, $2, $3)
                     """,
-                    event.id, event.type, event.to_dict()
+                    event['id'], event['type'], event
                 )
 
             # Handle different event types
-            if event.type == "customer.subscription.created":
+            event_type = event['type']
+            if event_type == "customer.subscription.created":
                 await self._handle_subscription_created(event)
-            elif event.type == "customer.subscription.updated":
+            elif event_type == "customer.subscription.updated":
                 await self._handle_subscription_updated(event)
-            elif event.type == "customer.subscription.deleted":
+            elif event_type == "customer.subscription.deleted":
                 await self._handle_subscription_deleted(event)
-            elif event.type == "invoice.payment_succeeded":
+            elif event_type == "invoice.payment_succeeded":
                 await self._handle_payment_succeeded(event)
-            elif event.type == "invoice.payment_failed":
+            elif event_type == "invoice.payment_failed":
                 await self._handle_payment_failed(event)
 
             # Mark as processed
@@ -257,25 +258,30 @@ class StripeManager:
                     SET processed = true, processed_at = $1
                     WHERE event_id = $2
                     """,
-                    datetime.utcnow(), event.id
+                    datetime.utcnow(), event['id']
                 )
 
-            logger.info("Webhook processed", event_type=event.type, event_id=event.id)
-            return {"status": "success", "event_type": event.type}
+            logger.info("Webhook processed", event_type=event_type, event_id=event['id'])
+            return {"status": "success", "event_type": event_type}
 
         except Exception as e:
             logger.error("Webhook processing failed", error=str(e))
 
-            # Store error
-            async with self.db.acquire() as conn:
-                await conn.execute(
-                    """
-                    UPDATE webhook_events
-                    SET processing_error = $1
-                    WHERE event_id = $2
-                    """,
-                    str(e), event.id
-                )
+            # Store error (event_id might not be available if construct_event failed)
+            try:
+                event_id = event.get('id') if isinstance(event, dict) else None
+                if event_id:
+                    async with self.db.acquire() as conn:
+                        await conn.execute(
+                            """
+                            UPDATE webhook_events
+                            SET processing_error = $1
+                            WHERE event_id = $2
+                            """,
+                            str(e), event_id
+                        )
+            except:
+                pass  # If we can't log the error, that's okay
 
             raise
 

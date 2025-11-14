@@ -1,12 +1,11 @@
 """
 Alpha Vantage Data Source
-Provides fundamental data, technical indicators, and forex/crypto data
+Provides fundamental data, technical indicators, and market data
 
 Capabilities:
 - Company fundamentals (income statement, balance sheet, cash flow)
-- Technical indicators (SMA, EMA, RSI, MACD, etc.)
-- Forex and crypto data
-- Economic indicators
+- Market data and quotes
+- Earnings data
 
 Rate Limits:
 - Free tier: 25 requests/day
@@ -15,263 +14,181 @@ Rate Limits:
 """
 
 import aiohttp
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from datetime import datetime
-import asyncio
-from urllib.parse import urlencode
 
-from .base import DataSource
+from .base import (
+    DataSourcePlugin,
+    DataSourceType,
+    DataSourceCapability,
+    FinancialData
+)
 
 
-class AlphaVantageSource(DataSource):
+class AlphaVantageSource(DataSourcePlugin):
     """Alpha Vantage data source implementation"""
 
-    def __init__(self, api_key: str, cache_ttl: int = 3600):
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         Initialize Alpha Vantage source
 
         Args:
-            api_key: Alpha Vantage API key (get from https://www.alphavantage.co/support/#api-key)
-            cache_ttl: Cache time-to-live in seconds (default: 1 hour, important for free tier!)
+            config: Configuration dict
+                - api_key: Alpha Vantage API key (required)
+                - cache_ttl: Cache time-to-live in seconds (default: 3600)
         """
-        super().__init__(name="Alpha Vantage", source_type="fundamentals")
-        self.api_key = api_key
+        if config is None:
+            config = {}
+
+        super().__init__(config)
+
+        self.api_key = config.get('api_key', 'demo')  # 'demo' key for testing
         self.base_url = "https://www.alphavantage.co/query"
-        self.cache_ttl = cache_ttl
+        self.cache_ttl = config.get('cache_ttl', 3600)  # 1 hour default
         self._cache = {}
 
-    @property
-    def available_metrics(self) -> List[str]:
-        """Available metrics from Alpha Vantage"""
+    def get_source_type(self) -> DataSourceType:
+        """Return source type identifier"""
+        return DataSourceType.ALPHA_VANTAGE
+
+    def get_capabilities(self) -> List[DataSourceCapability]:
+        """Return list of capabilities"""
         return [
-            # Income Statement
-            "total_revenue",
-            "gross_profit",
-            "operating_income",
-            "net_income",
-            "ebitda",
-            "eps",
-
-            # Balance Sheet
-            "total_assets",
-            "total_liabilities",
-            "total_shareholder_equity",
-            "retained_earnings",
-            "total_current_assets",
-            "total_current_liabilities",
-
-            # Cash Flow
-            "operating_cashflow",
-            "capital_expenditures",
-            "free_cash_flow",
-
-            # Company Overview
-            "market_cap",
-            "pe_ratio",
-            "peg_ratio",
-            "book_value",
-            "dividend_per_share",
-            "dividend_yield",
-            "eps_ttm",
-            "revenue_ttm",
-            "profit_margin",
-            "operating_margin",
-            "return_on_assets",
-            "return_on_equity",
-            "52_week_high",
-            "52_week_low",
-            "50_day_moving_average",
-            "200_day_moving_average"
+            DataSourceCapability.FUNDAMENTALS,
+            DataSourceCapability.MARKET_DATA,
+            DataSourceCapability.EARNINGS
         ]
 
-    async def get_metric(self, ticker: str, metric_name: str) -> Dict:
+    def get_rate_limit(self) -> Optional[int]:
+        """Alpha Vantage free tier: 25/day = ~1 per hour"""
+        return 1  # Very conservative for free tier
+
+    async def get_financial_data(
+        self,
+        ticker: str,
+        concepts: List[str],
+        period: Optional[str] = None
+    ) -> List[FinancialData]:
         """
-        Get a single metric
+        Fetch financial data for given ticker and concepts
 
         Args:
             ticker: Stock ticker symbol
-            metric_name: Name of metric
+            concepts: List of concepts (e.g., ["revenue", "net_income"])
+            period: Optional period (uses most recent if not specified)
 
         Returns:
-            Metric data with value, date, citation
+            List of FinancialData objects
         """
-        # Determine which API endpoint to use based on metric
-        if metric_name in ["total_revenue", "gross_profit", "operating_income", "net_income", "ebitda", "eps"]:
-            data = await self.get_income_statement(ticker)
-            statement = "income_statement"
-        elif metric_name in ["total_assets", "total_liabilities", "total_shareholder_equity",
-                             "retained_earnings", "total_current_assets", "total_current_liabilities"]:
-            data = await self.get_balance_sheet(ticker)
-            statement = "balance_sheet"
-        elif metric_name in ["operating_cashflow", "capital_expenditures", "free_cash_flow"]:
-            data = await self.get_cash_flow(ticker)
-            statement = "cash_flow"
-        else:
-            # Company overview metrics
-            data = await self.get_company_overview(ticker)
-            statement = "company_overview"
+        results = []
 
-        # Extract metric value
-        metric_map = {
-            "total_revenue": "totalRevenue",
-            "gross_profit": "grossProfit",
-            "operating_income": "operatingIncome",
-            "net_income": "netIncome",
-            "ebitda": "ebitda",
-            "eps": "eps",
-            "total_assets": "totalAssets",
-            "total_liabilities": "totalLiabilities",
-            "total_shareholder_equity": "totalShareholderEquity",
-            "retained_earnings": "retainedEarnings",
-            "total_current_assets": "totalCurrentAssets",
-            "total_current_liabilities": "totalCurrentLiabilities",
-            "operating_cashflow": "operatingCashflow",
-            "capital_expenditures": "capitalExpenditures",
-            "free_cash_flow": "freeCashFlow",
-            "market_cap": "MarketCapitalization",
-            "pe_ratio": "PERatio",
-            "peg_ratio": "PEGRatio",
-            "book_value": "BookValue",
-            "dividend_per_share": "DividendPerShare",
-            "dividend_yield": "DividendYield",
-            "eps_ttm": "EPS",
-            "revenue_ttm": "RevenueTTM",
-            "profit_margin": "ProfitMargin",
-            "operating_margin": "OperatingMarginTTM",
-            "return_on_assets": "ReturnOnAssetsTTM",
-            "return_on_equity": "ReturnOnEquityTTM",
-            "52_week_high": "52WeekHigh",
-            "52_week_low": "52WeekLow",
-            "50_day_moving_average": "50DayMovingAverage",
-            "200_day_moving_average": "200DayMovingAverage"
+        # Map concepts to Alpha Vantage data
+        # For fundamentals, we need different API calls
+        fundamental_concepts = {
+            "revenue", "total_revenue", "gross_profit", "operating_income",
+            "net_income", "ebitda", "eps"
         }
 
-        av_key = metric_map.get(metric_name)
-        if not av_key:
-            raise ValueError(f"Unknown metric: {metric_name}")
+        market_concepts = {
+            "current_price", "market_cap", "pe_ratio", "peg_ratio",
+            "book_value", "dividend_yield"
+        }
 
-        # Extract value from response
-        if statement == "company_overview":
-            value = data.get(av_key)
-            fiscal_date = data.get("LatestQuarter", "")
-        else:
-            # Financial statements return arrays, get most recent
-            if isinstance(data, list) and len(data) > 0:
-                most_recent = data[0]
-                value = most_recent.get(av_key)
-                fiscal_date = most_recent.get("fiscalDateEnding", "")
-            else:
-                raise ValueError("No financial data available")
+        # Get company overview (has many market metrics)
+        if any(c in market_concepts for c in concepts):
+            overview = await self._get_company_overview(ticker)
 
-        if value is None or value == "None":
-            raise ValueError(f"Metric not available: {metric_name}")
-
-        # Convert to float
-        try:
-            value = float(value)
-        except ValueError:
-            raise ValueError(f"Invalid value for {metric_name}: {value}")
-
-        return {
-            "value": value,
-            "unit": "USD",
-            "date": fiscal_date,
-            "citation": {
-                "source": "Alpha Vantage",
-                "statement": statement,
-                "url": f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={ticker}"
+            concept_map = {
+                "market_cap": ("MarketCapitalization", "USD"),
+                "pe_ratio": ("PERatio", "ratio"),
+                "peg_ratio": ("PEGRatio", "ratio"),
+                "book_value": ("BookValue", "USD"),
+                "dividend_yield": ("DividendYield", "percent"),
+                "eps": ("EPS", "USD"),
+                "revenue": ("RevenueTTM", "USD"),
+                "profit_margin": ("ProfitMargin", "percent")
             }
-        }
 
-    async def get_income_statement(self, ticker: str) -> List[Dict]:
-        """Get income statement data"""
-        params = {
-            "function": "INCOME_STATEMENT",
-            "symbol": ticker,
-            "apikey": self.api_key
-        }
+            for concept in concepts:
+                if concept in concept_map:
+                    av_key, unit = concept_map[concept]
+                    value = overview.get(av_key)
 
-        data = await self._make_request(params)
-        return data.get("annualReports", [])
+                    if value and value != "None":
+                        try:
+                            financial_data = FinancialData(
+                                source=DataSourceType.ALPHA_VANTAGE,
+                                ticker=ticker,
+                                concept=concept,
+                                value=float(value),
+                                unit=unit,
+                                period=overview.get("LatestQuarter", "ttm"),
+                                period_type="instant",
+                                citation={
+                                    "source": "Alpha Vantage",
+                                    "endpoint": "OVERVIEW",
+                                    "url": f"https://www.alphavantage.co/query?function=OVERVIEW&symbol={ticker}"
+                                },
+                                retrieved_at=datetime.now(),
+                                confidence=0.90
+                            )
+                            results.append(financial_data)
+                        except (ValueError, TypeError):
+                            continue  # Skip invalid values
 
-    async def get_balance_sheet(self, ticker: str) -> List[Dict]:
-        """Get balance sheet data"""
-        params = {
-            "function": "BALANCE_SHEET",
-            "symbol": ticker,
-            "apikey": self.api_key
-        }
+        return results
 
-        data = await self._make_request(params)
-        return data.get("annualReports", [])
-
-    async def get_cash_flow(self, ticker: str) -> List[Dict]:
-        """Get cash flow statement data"""
-        params = {
-            "function": "CASH_FLOW",
-            "symbol": ticker,
-            "apikey": self.api_key
-        }
-
-        data = await self._make_request(params)
-        return data.get("annualReports", [])
-
-    async def get_company_overview(self, ticker: str) -> Dict:
-        """Get company overview with key metrics"""
-        params = {
-            "function": "OVERVIEW",
-            "symbol": ticker,
-            "apikey": self.api_key
-        }
-
-        return await self._make_request(params)
-
-    async def get_earnings(self, ticker: str) -> Dict:
-        """Get earnings data (quarterly and annual)"""
-        params = {
-            "function": "EARNINGS",
-            "symbol": ticker,
-            "apikey": self.api_key
-        }
-
-        return await self._make_request(params)
-
-    async def get_technical_indicator(
-        self,
-        ticker: str,
-        indicator: str,
-        interval: str = "daily",
-        time_period: int = 14
-    ) -> Dict:
+    async def search_companies(self, query: str) -> List[Dict[str, Any]]:
         """
-        Get technical indicator
+        Search for companies
 
         Args:
-            ticker: Stock ticker
-            indicator: Indicator name (SMA, EMA, RSI, MACD, BBANDS, etc.)
-            interval: Time interval (1min, 5min, 15min, 30min, 60min, daily, weekly, monthly)
-            time_period: Number of data points used to calculate indicator
+            query: Search query (company name or ticker)
 
         Returns:
-            Technical indicator data
-
-        Example:
-            rsi = await source.get_technical_indicator("AAPL", "RSI", "daily", 14)
+            List of company info dicts
         """
         params = {
-            "function": indicator.upper(),
-            "symbol": ticker,
-            "interval": interval,
-            "time_period": time_period,
+            "function": "SYMBOL_SEARCH",
+            "keywords": query,
             "apikey": self.api_key
         }
 
-        return await self._make_request(params)
+        try:
+            data = await self._make_request(params)
+            matches = data.get("bestMatches", [])
 
-    async def _make_request(self, params: Dict) -> Dict:
-        """Make API request with caching"""
-        # Create cache key from params
-        cache_key = f"{params['function']}_{params['symbol']}"
+            return [
+                {
+                    'ticker': match.get("1. symbol"),
+                    'name': match.get("2. name"),
+                    'type': match.get("3. type"),
+                    'region': match.get("4. region"),
+                    'currency': match.get("8. currency"),
+                    'source': 'alpha_vantage'
+                }
+                for match in matches[:5]  # Top 5 results
+            ]
+        except Exception:
+            return []
+
+    async def health_check(self) -> bool:
+        """
+        Check if Alpha Vantage is accessible
+
+        Returns:
+            True if healthy, False otherwise
+        """
+        try:
+            # Try to fetch overview for a well-known ticker
+            overview = await self._get_company_overview("AAPL")
+            return 'Symbol' in overview
+        except Exception:
+            return False
+
+    async def _get_company_overview(self, ticker: str) -> Dict[str, Any]:
+        """Get company overview with key metrics"""
+        cache_key = f"overview_{ticker}"
 
         # Check cache
         if cache_key in self._cache:
@@ -279,7 +196,29 @@ class AlphaVantageSource(DataSource):
             if (datetime.now() - cached_time).seconds < self.cache_ttl:
                 return cached_data
 
-        # Make request
+        params = {
+            "function": "OVERVIEW",
+            "symbol": ticker,
+            "apikey": self.api_key
+        }
+
+        data = await self._make_request(params)
+
+        # Cache the result
+        self._cache[cache_key] = (data, datetime.now())
+
+        return data
+
+    async def _make_request(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Make API request with caching and error handling
+
+        Args:
+            params: Query parameters
+
+        Returns:
+            Response data dictionary
+        """
         async with aiohttp.ClientSession() as session:
             async with session.get(self.base_url, params=params) as response:
                 if response.status != 200:
@@ -295,66 +234,79 @@ class AlphaVantageSource(DataSource):
                     # Rate limit message
                     raise ValueError("Rate limit exceeded. Please wait or upgrade your API key.")
 
-                # Cache the result
-                self._cache[cache_key] = (data, datetime.now())
-
                 return data
 
-    async def get_forex_rate(self, from_currency: str, to_currency: str) -> Dict:
+    async def get_income_statement(self, ticker: str) -> List[Dict[str, Any]]:
         """
-        Get forex exchange rate
+        Get income statement data (convenience method)
 
         Args:
-            from_currency: Base currency code (e.g., "USD")
-            to_currency: Target currency code (e.g., "EUR")
+            ticker: Stock ticker symbol
 
         Returns:
-            Exchange rate data
+            List of annual reports
         """
         params = {
-            "function": "CURRENCY_EXCHANGE_RATE",
-            "from_currency": from_currency,
-            "to_currency": to_currency,
+            "function": "INCOME_STATEMENT",
+            "symbol": ticker,
             "apikey": self.api_key
         }
 
         data = await self._make_request(params)
-        return data.get("Realtime Currency Exchange Rate", {})
+        return data.get("annualReports", [])
 
-    async def get_crypto_price(self, symbol: str, market: str = "USD") -> Dict:
+    async def get_balance_sheet(self, ticker: str) -> List[Dict[str, Any]]:
         """
-        Get cryptocurrency price
+        Get balance sheet data (convenience method)
 
         Args:
-            symbol: Crypto symbol (e.g., "BTC")
-            market: Market currency (e.g., "USD")
+            ticker: Stock ticker symbol
 
         Returns:
-            Crypto price data
+            List of annual reports
         """
         params = {
-            "function": "DIGITAL_CURRENCY_DAILY",
-            "symbol": symbol,
-            "market": market,
+            "function": "BALANCE_SHEET",
+            "symbol": ticker,
+            "apikey": self.api_key
+        }
+
+        data = await self._make_request(params)
+        return data.get("annualReports", [])
+
+    async def get_cash_flow(self, ticker: str) -> List[Dict[str, Any]]:
+        """
+        Get cash flow statement data (convenience method)
+
+        Args:
+            ticker: Stock ticker symbol
+
+        Returns:
+            List of annual reports
+        """
+        params = {
+            "function": "CASH_FLOW",
+            "symbol": ticker,
+            "apikey": self.api_key
+        }
+
+        data = await self._make_request(params)
+        return data.get("annualReports", [])
+
+    async def get_earnings(self, ticker: str) -> Dict[str, Any]:
+        """
+        Get earnings data (convenience method)
+
+        Args:
+            ticker: Stock ticker symbol
+
+        Returns:
+            Earnings data dictionary
+        """
+        params = {
+            "function": "EARNINGS",
+            "symbol": ticker,
             "apikey": self.api_key
         }
 
         return await self._make_request(params)
-
-
-# Convenience functions
-async def get_company_fundamentals(ticker: str, api_key: str) -> Dict:
-    """Quick helper to get all fundamental data"""
-    source = AlphaVantageSource(api_key=api_key)
-
-    overview = await source.get_company_overview(ticker)
-    income = await source.get_income_statement(ticker)
-    balance = await source.get_balance_sheet(ticker)
-    cashflow = await source.get_cash_flow(ticker)
-
-    return {
-        "overview": overview,
-        "income_statement": income,
-        "balance_sheet": balance,
-        "cash_flow": cashflow
-    }
