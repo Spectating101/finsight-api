@@ -12,8 +12,13 @@ venv/
 .idea/
 experiment_results/
 coding/
-results/
-*.csv
-*.json
+# results/ - Keep results for coursework submission
+# Allow results subdirectories for coursework
+!results/
+!results/**/*.png
+!results/**/*.pdf
+!results/**/*.csv
+!results/**/*.json
+!results/**/*.tex
 .cache/
 .env
