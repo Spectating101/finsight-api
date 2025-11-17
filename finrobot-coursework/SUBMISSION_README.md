@@ -38,11 +38,17 @@ Production-grade infrastructure:
 ### 3. Experimental Data
 **Location:** `results/`
 
-Generated experimental results:
-- `all_results_*.json` - Complete dataset (48 experiments)
+**Synthetic Experiments (48 total):**
+- `all_results_*.json` - Complete synthetic dataset (48 experiments)
 - `rag_results_*.json` - RAG baseline results (24 experiments)
 - `agent_results_*.json` - Agent system results (24 experiments)
 - `summary_*.csv` - Tabular summary for analysis
+
+**Real API Experiments (Cerebras Validation):**
+- `real_experiment_*.json` - Actual LLM responses from Cerebras API
+- 3 stocks tested (AAPL, MSFT, NVDA) with prediction task
+- Validates synthetic methodology with real inference
+- Key finding: Fast APIs reduce latency ratio from 6.6× to 1.2×
 
 ### 4. Visualizations
 **Location:** `results/figures/`
@@ -75,9 +81,10 @@ Comprehensive testing:
 **Location:** `scripts/`
 
 Executable tools:
-- `generate_synthetic_data.py` - Data generation pipeline
+- `generate_synthetic_data.py` - Synthetic data generation pipeline
 - `analyze_results.py` - Visualization and analysis
-- `run_full_experiment.py` - Complete A/B experiment runner
+- `run_full_experiment.py` - Complete A/B experiment runner (8 stocks)
+- `run_real_experiment.py` - Real API experiments with Cerebras
 - `run_rag.py` - RAG baseline script
 - `run_agent_yfinance.py` - Agent experiment script
 
@@ -85,7 +92,7 @@ Executable tools:
 
 ## Key Findings
 
-### Quantitative Results
+### Quantitative Results (Synthetic - 48 experiments)
 
 | Metric | RAG Baseline | FinRobot Agent | Ratio |
 |--------|-------------|----------------|-------|
@@ -94,9 +101,16 @@ Executable tools:
 | Reasoning Steps | 1 | 11.5 | 11.5× |
 | Response Length | 720 chars | 1563 chars | 2.17× |
 
+### Real API Validation (Cerebras - 3 stocks)
+
+| Metric | RAG Baseline | FinRobot Agent | Ratio |
+|--------|-------------|----------------|-------|
+| Avg Latency | 1.26s | 1.53s | 1.21× |
+| Tool Calls | 0 | 2.0 | - |
+
 ### Core Trade-off
 
-**Agent systems are 6.6× slower but provide 2.2× deeper analysis through iterative reasoning and tool utilization.**
+**Agent systems provide deeper analysis through iterative reasoning and tool utilization, but at a speed cost that varies significantly with infrastructure (1.2× to 6.6× slower depending on API).**
 
 ### Practical Implications
 
