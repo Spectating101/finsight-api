@@ -127,7 +127,9 @@ response = llm(prompt)  # Single call
 
 ### 3.4 Metrics Collected
 
-For each experiment, we measure:
+For each experiment, we measure a comprehensive set of 19+ metrics across multiple dimensions:
+
+**Performance Metrics:**
 
 | Metric | Description | Unit |
 |--------|-------------|------|
@@ -137,6 +139,24 @@ For each experiment, we measure:
 | `response_length` | Output character count | chars |
 | `prompt_tokens` | Input token consumption | tokens |
 | `completion_tokens` | Output token consumption | tokens |
+
+**Quality Metrics:**
+
+| Metric | Description | Scale |
+|--------|-------------|-------|
+| `completeness_score` | Addresses all requested aspects | 0-100 |
+| `specificity_score` | Uses specific numbers vs vague statements | 0-100 |
+| `financial_quality_score` | Covers relevant financial factors | 0-100 |
+| `reasoning_coherence` | Logical flow and evidence-based claims | 0-100 |
+| `citation_density` | Data citations per 100 words | ratio |
+| `composite_quality_score` | Weighted average of quality dimensions | 0-100 |
+
+**Cost Metrics:**
+
+| Metric | Description | Unit |
+|--------|-------------|------|
+| `estimated_cost_usd` | API cost per query | USD |
+| `cost_per_insight` | Cost efficiency metric | USD/point |
 
 ### 3.5 Experimental Design
 
@@ -200,7 +220,31 @@ The agent system demonstrates substantially deeper reasoning:
 ![Reasoning Depth](../results/figures/reasoning_depth.png)
 *Figure 2: Tool usage and reasoning step comparison*
 
-### 4.3 Response Quality Characteristics
+### 4.3 Quality Metrics Analysis
+
+Our comprehensive quality scoring reveals significant differences in analytical depth:
+
+**Table 2.5: Quality Score Comparison**
+
+| Quality Dimension | RAG Baseline | FinRobot Agent | Ratio |
+|-------------------|-------------|----------------|-------|
+| Composite Quality Score | 61.3/100 | 78.2/100 | 1.28× |
+| Completeness Score | 93.3/100 | 100.0/100 | 1.07× |
+| Specificity Score | 46.7/100 | 100.0/100 | 2.14× |
+| Financial Quality Score | 41.6/100 | 45.2/100 | 1.09× |
+| Reasoning Coherence | 52.7/100 | 59.6/100 | 1.13× |
+| Citation Density | 5.14/100w | 14.36/100w | 2.79× |
+
+Key quality findings:
+- **Agent achieves 1.28× higher overall quality** (78.2 vs 61.3)
+- **Agent is 2.14× more specific**, providing concrete numbers instead of vague assessments
+- **Citation density is 2.79× higher** for agents, with 14.36 data citations per 100 words
+- **Agent achieves 100% completeness**, addressing all requested analysis aspects
+
+![Quality Scores](../results/figures/quality_scores.png)
+*Figure 2.5: Quality dimension breakdown comparison*
+
+### 4.4 Response Quality Characteristics
 
 Qualitative analysis of responses reveals distinct patterns:
 
@@ -221,7 +265,7 @@ Qualitative analysis of responses reveals distinct patterns:
 ![Response Quality](../results/figures/response_quality.png)
 *Figure 3: Response depth by task type*
 
-### 4.4 Trade-off Analysis
+### 4.5 Trade-off Analysis
 
 The fundamental trade-off is visualized in Figure 4:
 
@@ -234,7 +278,34 @@ Key observations:
 - RAG responses tightly clustered (low variance)
 - No overlap in performance characteristics
 
-### 4.5 Sector-Wise Performance
+### 4.6 Cost-Benefit Analysis
+
+Our comprehensive cost analysis reveals the economic trade-offs:
+
+**Table 3: Cost Efficiency Metrics**
+
+| Metric | RAG Baseline | FinRobot Agent | Ratio |
+|--------|-------------|----------------|-------|
+| Avg Cost per Query | $0.000409 | $0.007050 | 17.2× |
+| Total Cost (24 runs) | $0.0098 | $0.1692 | 17.3× |
+| Quality per $0.001 | 6.24 points | 0.46 points | 13.5× |
+| Quality per second | 9.96 pts/s | 1.92 pts/s | 5.2× |
+
+![Cost Benefit](../results/figures/cost_benefit.png)
+*Figure 4.5: Cost efficiency analysis*
+
+**Key Cost-Benefit Findings:**
+- **RAG is 17.2× cheaper** per query due to single-pass inference
+- **RAG provides 13.5× better quality per dollar** - more cost efficient
+- **RAG delivers 5.2× better quality per second** - more time efficient
+- **Agent cost is justified** when quality premium (1.28×) outweighs cost increase (17.2×)
+
+This analysis reveals that while agents produce higher-quality output, RAG systems offer superior cost efficiency for budget-constrained applications.
+
+![Latency Quality Tradeoff](../results/figures/latency_quality_tradeoff.png)
+*Figure 4.6: Latency vs. quality score trade-off*
+
+### 4.7 Sector-Wise Performance
 
 Performance remains consistent across market sectors:
 
@@ -243,11 +314,11 @@ Performance remains consistent across market sectors:
 
 Both systems maintain relative performance characteristics regardless of sector, suggesting architectural rather than domain-specific factors drive differences.
 
-### 4.6 Validation with Real API (Cerebras)
+### 4.8 Validation with Real API (Cerebras)
 
 To validate our synthetic results, we conducted real experiments using the Cerebras API with LLaMA-3.3-70B:
 
-**Table 3: Real Experiment Results (3 stocks, prediction task)**
+**Table 4: Real Experiment Results (3 stocks, prediction task)**
 
 | Metric | RAG Baseline | FinRobot Agent | Ratio |
 |--------|-------------|----------------|-------|
@@ -341,13 +412,14 @@ Future systems may benefit from hybrid architectures:
 
 ## 6. Conclusion
 
-This study provides empirical evidence for the performance trade-offs between agent-based AI systems and RAG architectures for financial analysis. Our comprehensive experimental framework, encompassing 48 experiments across 8 stocks and 3 task types, reveals that:
+This study provides empirical evidence for the performance trade-offs between agent-based AI systems and RAG architectures for financial analysis. Our comprehensive experimental framework, encompassing 48 experiments across 8 stocks, 3 task types, and 19+ quality metrics, reveals that:
 
-1. **Agent systems are 6.6× slower but provide 2.2× deeper analysis** through iterative reasoning and tool utilization
-2. **RAG systems excel in speed** but lack the adaptive reasoning capabilities of agents
-3. **The choice between systems** should be driven by specific use case requirements (speed vs. depth)
+1. **Agent systems achieve 1.28× higher quality scores** (78.2 vs 61.3) with 2.14× higher specificity through iterative reasoning and tool utilization
+2. **Agent systems are 6.6× slower and 17.2× more expensive** than RAG systems
+3. **RAG systems excel in cost efficiency** (13.5× better quality per dollar) and speed (5.2× better quality per second)
+4. **The choice between systems** should be driven by specific use case requirements balancing quality, speed, and cost
 
-Our production-grade framework (8,249 lines, 94+ tests) demonstrates that rigorous empirical evaluation of AI systems is both feasible and necessary for informed technology decisions in finance.
+Our production-grade framework (8,249 lines, 94+ tests) with comprehensive quality scoring (completeness, specificity, financial quality, reasoning coherence, cost efficiency) demonstrates that rigorous empirical evaluation of AI systems is both feasible and necessary for informed technology decisions in finance.
 
 **Future Work:**
 - Extend to real-time API experiments with additional validation

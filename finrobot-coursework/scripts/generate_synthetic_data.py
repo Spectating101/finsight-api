@@ -15,6 +15,17 @@ import random
 import csv
 from datetime import datetime
 from typing import List, Dict, Any
+import sys
+import os
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from finrobot.experiments.quality_scorer import (
+    score_response,
+    quality_metrics_to_dict,
+    calculate_composite_quality_score
+)
 
 # Seed for reproducibility
 random.seed(42)
@@ -249,6 +260,18 @@ def generate_synthetic_results() -> List[Dict[str, Any]]:
             rag_latency_llm = random.uniform(2.5, 6.0)
             rag_response = generate_rag_response(ticker, task, company)
 
+            rag_prompt_tokens = random.randint(450, 650)
+            rag_completion_tokens = len(rag_response.split())
+
+            # Calculate comprehensive quality metrics
+            rag_quality = score_response(
+                response=rag_response,
+                task=task,
+                prompt_tokens=rag_prompt_tokens,
+                completion_tokens=rag_completion_tokens,
+                model=MODEL
+            )
+
             rag_result = {
                 "system": "rag",
                 "ticker": ticker,
@@ -263,9 +286,12 @@ def generate_synthetic_results() -> List[Dict[str, Any]]:
                 "tool_calls": 0,
                 "reasoning_steps": 1,
                 "response_length": len(rag_response),
-                "prompt_tokens": random.randint(450, 650),
-                "completion_tokens": len(rag_response.split()),
+                "prompt_tokens": rag_prompt_tokens,
+                "completion_tokens": rag_completion_tokens,
                 "timestamp": "2025-11-17",
+                # NEW: Quality Metrics
+                "quality_metrics": quality_metrics_to_dict(rag_quality),
+                "composite_quality_score": calculate_composite_quality_score(rag_quality),
             }
             rag_results.append(rag_result)
             all_results.append(rag_result)
@@ -291,6 +317,18 @@ def generate_synthetic_results() -> List[Dict[str, Any]]:
             if num_tools >= 5:
                 tool_calls_detail.append(("get_stock_info", ticker))
 
+            agent_prompt_tokens = random.randint(800, 1200) * reasoning_steps
+            agent_completion_tokens = len(agent_response.split())
+
+            # Calculate comprehensive quality metrics
+            agent_quality = score_response(
+                response=agent_response,
+                task=task,
+                prompt_tokens=agent_prompt_tokens,
+                completion_tokens=agent_completion_tokens,
+                model=MODEL
+            )
+
             agent_result = {
                 "system": "agent",
                 "ticker": ticker,
@@ -304,9 +342,12 @@ def generate_synthetic_results() -> List[Dict[str, Any]]:
                 "tool_calls_detail": tool_calls_detail,
                 "reasoning_steps": reasoning_steps,
                 "response_length": len(agent_response),
-                "prompt_tokens": random.randint(800, 1200) * reasoning_steps,
-                "completion_tokens": len(agent_response.split()),
+                "prompt_tokens": agent_prompt_tokens,
+                "completion_tokens": agent_completion_tokens,
                 "timestamp": "2025-11-17",
+                # NEW: Quality Metrics
+                "quality_metrics": quality_metrics_to_dict(agent_quality),
+                "composite_quality_score": calculate_composite_quality_score(agent_quality),
             }
             agent_results.append(agent_result)
             all_results.append(agent_result)
@@ -329,15 +370,20 @@ def save_results(all_results, rag_results, agent_results):
     with open(f"{OUTPUT_DIR}/agent_results_{TIMESTAMP}.json", "w") as f:
         json.dump(agent_results, f, indent=2)
 
-    # Create summary CSV
+    # Create summary CSV with comprehensive metrics
     with open(f"{OUTPUT_DIR}/summary_{TIMESTAMP}.csv", "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow([
             "system", "ticker", "sector", "task", "latency_total", "tool_calls",
-            "reasoning_steps", "response_length", "prompt_tokens", "completion_tokens"
+            "reasoning_steps", "response_length", "prompt_tokens", "completion_tokens",
+            # Quality metrics
+            "completeness_score", "specificity_score", "financial_quality_score",
+            "reasoning_coherence", "composite_quality_score", "estimated_cost_usd",
+            "citation_density", "factor_coverage", "actionable_recommendations"
         ])
 
         for result in all_results:
+            qm = result.get("quality_metrics", {})
             writer.writerow([
                 result.get("system", ""),
                 result.get("ticker", ""),
@@ -349,6 +395,16 @@ def save_results(all_results, rag_results, agent_results):
                 result.get("response_length", 0),
                 result.get("prompt_tokens", 0),
                 result.get("completion_tokens", 0),
+                # Quality metrics
+                qm.get("completeness_score", 0),
+                qm.get("specificity_score", 0),
+                qm.get("financial_quality_score", 0),
+                qm.get("reasoning_coherence", 0),
+                result.get("composite_quality_score", 0),
+                qm.get("estimated_cost_usd", 0),
+                qm.get("citation_density", 0),
+                qm.get("factor_coverage", 0),
+                qm.get("actionable_recommendations", 0),
             ])
 
     print(f"Results saved to {OUTPUT_DIR}/")
@@ -359,7 +415,7 @@ def save_results(all_results, rag_results, agent_results):
 
 
 def print_statistics(rag_results, agent_results):
-    """Print comprehensive statistics."""
+    """Print comprehensive statistics including quality metrics."""
     print("\n" + "="*70)
     print("SYNTHETIC EXPERIMENT RESULTS SUMMARY")
     print("="*70)
@@ -371,54 +427,83 @@ def print_statistics(rag_results, agent_results):
     rag_lengths = [r["response_length"] for r in rag_results]
     agent_lengths = [r["response_length"] for r in agent_results]
 
+    # Quality metrics
+    rag_quality_scores = [r["composite_quality_score"] for r in rag_results]
+    agent_quality_scores = [r["composite_quality_score"] for r in agent_results]
+    rag_completeness = [r["quality_metrics"]["completeness_score"] for r in rag_results]
+    agent_completeness = [r["quality_metrics"]["completeness_score"] for r in agent_results]
+    rag_specificity = [r["quality_metrics"]["specificity_score"] for r in rag_results]
+    agent_specificity = [r["quality_metrics"]["specificity_score"] for r in agent_results]
+    rag_costs = [r["quality_metrics"]["estimated_cost_usd"] for r in rag_results]
+    agent_costs = [r["quality_metrics"]["estimated_cost_usd"] for r in agent_results]
+    rag_citations = [r["quality_metrics"]["citation_density"] for r in rag_results]
+    agent_citations = [r["quality_metrics"]["citation_density"] for r in agent_results]
+
     print(f"\nExperiment Configuration:")
     print(f"  Stocks tested: {len(TICKERS)}")
     print(f"  Tasks per stock: {len(TASKS)}")
     print(f"  Total experiments: {len(rag_results) + len(agent_results)}")
+    print(f"  Metrics tracked: 19+ dimensions")
 
     print(f"\n📊 RAG BASELINE METRICS:")
-    print(f"  Latency:")
-    print(f"    Mean: {sum(rag_latencies)/len(rag_latencies):.2f}s")
-    print(f"    Min: {min(rag_latencies):.2f}s")
-    print(f"    Max: {max(rag_latencies):.2f}s")
+    print(f"  Performance:")
+    print(f"    Mean Latency: {sum(rag_latencies)/len(rag_latencies):.2f}s")
     print(f"    Std Dev: {(sum((x - sum(rag_latencies)/len(rag_latencies))**2 for x in rag_latencies) / len(rag_latencies))**0.5:.2f}s")
-    print(f"  Tool Usage: 0 (single LLM call)")
-    print(f"  Reasoning Steps: 1 (no iteration)")
-    print(f"  Response Length:")
-    print(f"    Mean: {sum(rag_lengths)/len(rag_lengths):.0f} chars")
-    print(f"    Mean tokens: {sum(r['completion_tokens'] for r in rag_results)/len(rag_results):.0f}")
+    print(f"  Quality Scores:")
+    print(f"    Composite Quality: {sum(rag_quality_scores)/len(rag_quality_scores):.1f}/100")
+    print(f"    Completeness: {sum(rag_completeness)/len(rag_completeness):.1f}/100")
+    print(f"    Specificity: {sum(rag_specificity)/len(rag_specificity):.1f}/100")
+    print(f"    Citation Density: {sum(rag_citations)/len(rag_citations):.2f} per 100 words")
+    print(f"  Cost Efficiency:")
+    print(f"    Avg Cost: ${sum(rag_costs)/len(rag_costs):.6f} per query")
+    print(f"    Total Cost (24 runs): ${sum(rag_costs):.4f}")
 
     print(f"\n🤖 FINROBOT AGENT METRICS:")
-    print(f"  Latency:")
-    print(f"    Mean: {sum(agent_latencies)/len(agent_latencies):.2f}s")
-    print(f"    Min: {min(agent_latencies):.2f}s")
-    print(f"    Max: {max(agent_latencies):.2f}s")
+    print(f"  Performance:")
+    print(f"    Mean Latency: {sum(agent_latencies)/len(agent_latencies):.2f}s")
     print(f"    Std Dev: {(sum((x - sum(agent_latencies)/len(agent_latencies))**2 for x in agent_latencies) / len(agent_latencies))**0.5:.2f}s")
-    print(f"  Tool Usage:")
-    print(f"    Mean: {sum(agent_tools)/len(agent_tools):.1f} calls")
-    print(f"    Min: {min(agent_tools)}")
-    print(f"    Max: {max(agent_tools)}")
-    print(f"  Reasoning Steps:")
-    print(f"    Mean: {sum(agent_steps)/len(agent_steps):.1f} steps")
-    print(f"    Min: {min(agent_steps)}")
-    print(f"    Max: {max(agent_steps)}")
-    print(f"  Response Length:")
-    print(f"    Mean: {sum(agent_lengths)/len(agent_lengths):.0f} chars")
-    print(f"    Mean tokens: {sum(r['completion_tokens'] for r in agent_results)/len(agent_results):.0f}")
+    print(f"    Mean Tool Calls: {sum(agent_tools)/len(agent_tools):.1f}")
+    print(f"    Mean Reasoning Steps: {sum(agent_steps)/len(agent_steps):.1f}")
+    print(f"  Quality Scores:")
+    print(f"    Composite Quality: {sum(agent_quality_scores)/len(agent_quality_scores):.1f}/100")
+    print(f"    Completeness: {sum(agent_completeness)/len(agent_completeness):.1f}/100")
+    print(f"    Specificity: {sum(agent_specificity)/len(agent_specificity):.1f}/100")
+    print(f"    Citation Density: {sum(agent_citations)/len(agent_citations):.2f} per 100 words")
+    print(f"  Cost Efficiency:")
+    print(f"    Avg Cost: ${sum(agent_costs)/len(agent_costs):.6f} per query")
+    print(f"    Total Cost (24 runs): ${sum(agent_costs):.4f}")
 
     print(f"\n📈 COMPARATIVE ANALYSIS:")
     latency_ratio = sum(agent_latencies)/len(agent_latencies) / (sum(rag_latencies)/len(rag_latencies))
-    length_ratio = sum(agent_lengths)/len(agent_lengths) / (sum(rag_lengths)/len(rag_lengths))
-    print(f"  Latency Ratio (Agent/RAG): {latency_ratio:.2f}x")
-    print(f"  Response Depth Ratio: {length_ratio:.2f}x")
-    print(f"  Reasoning Depth: {sum(agent_steps)/len(agent_steps):.1f}x more steps")
+    quality_ratio = sum(agent_quality_scores)/len(agent_quality_scores) / (sum(rag_quality_scores)/len(rag_quality_scores))
+    specificity_ratio = sum(agent_specificity)/len(agent_specificity) / (sum(rag_specificity)/len(rag_specificity))
+    cost_ratio = sum(agent_costs)/len(agent_costs) / (sum(rag_costs)/len(rag_costs))
+
+    print(f"  Performance Trade-offs:")
+    print(f"    Latency Ratio (Agent/RAG): {latency_ratio:.2f}x slower")
+    print(f"    Quality Ratio (Agent/RAG): {quality_ratio:.2f}x better")
+    print(f"    Specificity Ratio: {specificity_ratio:.2f}x more specific")
+    print(f"    Cost Ratio: {cost_ratio:.1f}x more expensive")
+
+    print(f"\n💰 COST-BENEFIT ANALYSIS:")
+    quality_per_dollar_rag = (sum(rag_quality_scores)/len(rag_quality_scores)) / (sum(rag_costs)*1000)
+    quality_per_dollar_agent = (sum(agent_quality_scores)/len(agent_quality_scores)) / (sum(agent_costs)*1000)
+    quality_per_second_rag = (sum(rag_quality_scores)/len(rag_quality_scores)) / (sum(rag_latencies)/len(rag_latencies))
+    quality_per_second_agent = (sum(agent_quality_scores)/len(agent_quality_scores)) / (sum(agent_latencies)/len(agent_latencies))
+
+    print(f"  Quality per $0.001:")
+    print(f"    RAG: {quality_per_dollar_rag:.2f} points")
+    print(f"    Agent: {quality_per_dollar_agent:.2f} points")
+    print(f"  Quality per second:")
+    print(f"    RAG: {quality_per_second_rag:.2f} points/s")
+    print(f"    Agent: {quality_per_second_agent:.2f} points/s")
 
     print(f"\n💡 KEY FINDINGS:")
-    print(f"  • Agent provides {length_ratio:.1f}x more detailed analysis")
-    print(f"  • Agent uses {sum(agent_tools)/len(agent_tools):.1f} tools per analysis on average")
-    print(f"  • Trade-off: {latency_ratio:.1f}x slower but significantly more thorough")
-    print(f"  • Agent responses include specific data citations from tools")
-    print(f"  • RAG is faster but lacks iterative reasoning capability")
+    print(f"  • Agent achieves {quality_ratio:.2f}x higher quality scores")
+    print(f"  • Agent is {latency_ratio:.1f}x slower but {specificity_ratio:.2f}x more specific")
+    print(f"  • Cost efficiency: RAG provides {quality_per_dollar_rag/quality_per_dollar_agent:.1f}x better quality per dollar")
+    print(f"  • Speed efficiency: RAG provides {quality_per_second_rag/quality_per_second_agent:.1f}x better quality per second")
+    print(f"  • Agent responses use {sum(agent_citations)/len(agent_citations):.1f}x more data citations")
 
     print("\n" + "="*70)
 

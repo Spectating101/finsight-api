@@ -219,49 +219,260 @@ def create_tradeoff_scatter(df):
     print("Created: tradeoff_scatter.png")
 
 
+def create_quality_score_comparison(df):
+    """Create radar chart showing multi-dimensional quality scores."""
+    if 'composite_quality_score' not in df.columns:
+        print("Skipping quality score comparison - no quality metrics in data")
+        return
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    # Composite quality scores by task
+    rag_quality = df[df['system'] == 'rag'].groupby('task')['composite_quality_score'].mean()
+    agent_quality = df[df['system'] == 'agent'].groupby('task')['composite_quality_score'].mean()
+
+    x = np.arange(len(rag_quality))
+    width = 0.35
+
+    bars1 = ax1.bar(x - width/2, rag_quality.values, width, label='RAG Baseline', color='#2ecc71', alpha=0.8)
+    bars2 = ax1.bar(x + width/2, agent_quality.values, width, label='FinRobot Agent', color='#3498db', alpha=0.8)
+
+    ax1.set_ylabel('Composite Quality Score (0-100)', fontsize=12)
+    ax1.set_xlabel('Task Type', fontsize=12)
+    ax1.set_title('Response Quality Score by Task', fontsize=14, fontweight='bold')
+    ax1.set_xticks(x)
+    ax1.set_xticklabels([t.replace('_', ' ').title() for t in rag_quality.index])
+    ax1.legend()
+    ax1.set_ylim(0, 100)
+
+    for bar in bars1:
+        height = bar.get_height()
+        ax1.annotate(f'{height:.1f}', xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=9)
+    for bar in bars2:
+        height = bar.get_height()
+        ax2.annotate(f'{height:.1f}', xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=9)
+
+    # Quality dimension breakdown
+    quality_dims = ['completeness_score', 'specificity_score', 'financial_quality_score', 'reasoning_coherence']
+    dim_labels = ['Completeness', 'Specificity', 'Financial\nQuality', 'Reasoning\nCoherence']
+
+    rag_scores = [df[df['system'] == 'rag'][dim].mean() for dim in quality_dims]
+    agent_scores = [df[df['system'] == 'agent'][dim].mean() for dim in quality_dims]
+
+    x = np.arange(len(dim_labels))
+
+    bars1 = ax2.bar(x - width/2, rag_scores, width, label='RAG Baseline', color='#2ecc71', alpha=0.8)
+    bars2 = ax2.bar(x + width/2, agent_scores, width, label='FinRobot Agent', color='#3498db', alpha=0.8)
+
+    ax2.set_ylabel('Score (0-100)', fontsize=12)
+    ax2.set_title('Quality Dimension Breakdown', fontsize=14, fontweight='bold')
+    ax2.set_xticks(x)
+    ax2.set_xticklabels(dim_labels, fontsize=10)
+    ax2.legend()
+    ax2.set_ylim(0, 100)
+
+    for bar in bars1:
+        height = bar.get_height()
+        ax2.annotate(f'{height:.1f}', xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=8)
+    for bar in bars2:
+        height = bar.get_height()
+        ax2.annotate(f'{height:.1f}', xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=8)
+
+    plt.tight_layout()
+    plt.savefig(f'{OUTPUT_DIR}/quality_scores.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{OUTPUT_DIR}/quality_scores.pdf', bbox_inches='tight')
+    plt.close()
+    print("Created: quality_scores.png")
+
+
+def create_cost_benefit_analysis(df):
+    """Create cost-benefit analysis visualization."""
+    if 'estimated_cost_usd' not in df.columns:
+        print("Skipping cost-benefit analysis - no cost metrics in data")
+        return
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+
+    # Cost comparison
+    rag_costs = df[df['system'] == 'rag']['estimated_cost_usd'].mean() * 1000  # Convert to millicents
+    agent_costs = df[df['system'] == 'agent']['estimated_cost_usd'].mean() * 1000
+
+    systems = ['RAG Baseline', 'FinRobot Agent']
+    costs = [rag_costs, agent_costs]
+    colors = ['#2ecc71', '#3498db']
+
+    bars = ax1.bar(systems, costs, color=colors, alpha=0.8)
+    ax1.set_ylabel('Cost per Query ($0.001)', fontsize=12)
+    ax1.set_title('Average Cost per Query', fontsize=14, fontweight='bold')
+
+    for bar in bars:
+        height = bar.get_height()
+        ax1.annotate(f'${height/1000:.6f}', xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=10)
+
+    # Quality per dollar (efficiency)
+    rag_quality = df[df['system'] == 'rag']['composite_quality_score'].mean()
+    agent_quality = df[df['system'] == 'agent']['composite_quality_score'].mean()
+
+    rag_efficiency = rag_quality / (rag_costs / 1000) if rag_costs > 0 else 0
+    agent_efficiency = agent_quality / (agent_costs / 1000) if agent_costs > 0 else 0
+
+    efficiencies = [rag_efficiency, agent_efficiency]
+
+    bars = ax2.bar(systems, efficiencies, color=colors, alpha=0.8)
+    ax2.set_ylabel('Quality Points per $0.001', fontsize=12)
+    ax2.set_title('Cost Efficiency (Quality per Dollar)', fontsize=14, fontweight='bold')
+
+    for bar in bars:
+        height = bar.get_height()
+        ax2.annotate(f'{height:.1f}', xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3), textcoords="offset points", ha='center', va='bottom', fontsize=10)
+
+    plt.tight_layout()
+    plt.savefig(f'{OUTPUT_DIR}/cost_benefit.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{OUTPUT_DIR}/cost_benefit.pdf', bbox_inches='tight')
+    plt.close()
+    print("Created: cost_benefit.png")
+
+
+def create_latency_quality_tradeoff(df):
+    """Create scatter plot showing latency vs quality trade-off."""
+    if 'composite_quality_score' not in df.columns:
+        print("Skipping latency-quality tradeoff - no quality metrics in data")
+        return
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    rag_df = df[df['system'] == 'rag']
+    agent_df = df[df['system'] == 'agent']
+
+    ax.scatter(rag_df['latency_total'], rag_df['composite_quality_score'],
+               s=120, alpha=0.7, label='RAG Baseline', color='#2ecc71', edgecolors='black', linewidth=0.5)
+    ax.scatter(agent_df['latency_total'], agent_df['composite_quality_score'],
+               s=120, alpha=0.7, label='FinRobot Agent', color='#3498db', edgecolors='black', linewidth=0.5)
+
+    ax.set_xlabel('Latency (seconds)', fontsize=12)
+    ax.set_ylabel('Composite Quality Score (0-100)', fontsize=12)
+    ax.set_title('Latency vs Quality Trade-off: Agent vs RAG', fontsize=14, fontweight='bold')
+    ax.legend(loc='lower right')
+    ax.grid(True, alpha=0.3)
+
+    # Add annotations for means
+    rag_mean_lat = rag_df['latency_total'].mean()
+    rag_mean_qual = rag_df['composite_quality_score'].mean()
+    agent_mean_lat = agent_df['latency_total'].mean()
+    agent_mean_qual = agent_df['composite_quality_score'].mean()
+
+    ax.axhline(y=rag_mean_qual, color='#27ae60', linestyle='--', alpha=0.5, linewidth=1)
+    ax.axhline(y=agent_mean_qual, color='#2980b9', linestyle='--', alpha=0.5, linewidth=1)
+
+    ax.annotate(f'RAG Mean: {rag_mean_qual:.1f}', xy=(0.05, rag_mean_qual),
+                xycoords=('axes fraction', 'data'), fontsize=9, color='#27ae60')
+    ax.annotate(f'Agent Mean: {agent_mean_qual:.1f}', xy=(0.05, agent_mean_qual),
+                xycoords=('axes fraction', 'data'), fontsize=9, color='#2980b9')
+
+    plt.tight_layout()
+    plt.savefig(f'{OUTPUT_DIR}/latency_quality_tradeoff.png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'{OUTPUT_DIR}/latency_quality_tradeoff.pdf', bbox_inches='tight')
+    plt.close()
+    print("Created: latency_quality_tradeoff.png")
+
+
 def create_summary_table(df):
     """Create comprehensive summary statistics table."""
-    summary = {
-        'Metric': [
-            'Average Latency (s)',
-            'Std Dev Latency (s)',
-            'Min Latency (s)',
-            'Max Latency (s)',
-            'Average Tool Calls',
-            'Average Reasoning Steps',
-            'Average Response Length (chars)',
-            'Average Completion Tokens',
-            'Total Experiments'
-        ],
-        'RAG Baseline': [
-            f"{df[df['system']=='rag']['latency_total'].mean():.2f}",
-            f"{df[df['system']=='rag']['latency_total'].std():.2f}",
-            f"{df[df['system']=='rag']['latency_total'].min():.2f}",
-            f"{df[df['system']=='rag']['latency_total'].max():.2f}",
-            f"{df[df['system']=='rag']['tool_calls'].mean():.1f}",
-            f"{df[df['system']=='rag']['reasoning_steps'].mean():.1f}",
-            f"{df[df['system']=='rag']['response_length'].mean():.0f}",
-            f"{df[df['system']=='rag']['completion_tokens'].mean():.0f}",
-            f"{len(df[df['system']=='rag'])}"
-        ],
-        'FinRobot Agent': [
-            f"{df[df['system']=='agent']['latency_total'].mean():.2f}",
-            f"{df[df['system']=='agent']['latency_total'].std():.2f}",
-            f"{df[df['system']=='agent']['latency_total'].min():.2f}",
-            f"{df[df['system']=='agent']['latency_total'].max():.2f}",
-            f"{df[df['system']=='agent']['tool_calls'].mean():.1f}",
-            f"{df[df['system']=='agent']['reasoning_steps'].mean():.1f}",
-            f"{df[df['system']=='agent']['response_length'].mean():.0f}",
-            f"{df[df['system']=='agent']['completion_tokens'].mean():.0f}",
-            f"{len(df[df['system']=='agent'])}"
+    base_metrics = [
+        'Average Latency (s)',
+        'Std Dev Latency (s)',
+        'Min Latency (s)',
+        'Max Latency (s)',
+        'Average Tool Calls',
+        'Average Reasoning Steps',
+        'Average Response Length (chars)',
+        'Average Completion Tokens',
+        'Total Experiments'
+    ]
+
+    rag_base = [
+        f"{df[df['system']=='rag']['latency_total'].mean():.2f}",
+        f"{df[df['system']=='rag']['latency_total'].std():.2f}",
+        f"{df[df['system']=='rag']['latency_total'].min():.2f}",
+        f"{df[df['system']=='rag']['latency_total'].max():.2f}",
+        f"{df[df['system']=='rag']['tool_calls'].mean():.1f}",
+        f"{df[df['system']=='rag']['reasoning_steps'].mean():.1f}",
+        f"{df[df['system']=='rag']['response_length'].mean():.0f}",
+        f"{df[df['system']=='rag']['completion_tokens'].mean():.0f}",
+        f"{len(df[df['system']=='rag'])}"
+    ]
+
+    agent_base = [
+        f"{df[df['system']=='agent']['latency_total'].mean():.2f}",
+        f"{df[df['system']=='agent']['latency_total'].std():.2f}",
+        f"{df[df['system']=='agent']['latency_total'].min():.2f}",
+        f"{df[df['system']=='agent']['latency_total'].max():.2f}",
+        f"{df[df['system']=='agent']['tool_calls'].mean():.1f}",
+        f"{df[df['system']=='agent']['reasoning_steps'].mean():.1f}",
+        f"{df[df['system']=='agent']['response_length'].mean():.0f}",
+        f"{df[df['system']=='agent']['completion_tokens'].mean():.0f}",
+        f"{len(df[df['system']=='agent'])}"
+    ]
+
+    # Add quality metrics if available
+    if 'composite_quality_score' in df.columns:
+        quality_metrics = [
+            'Composite Quality Score',
+            'Completeness Score',
+            'Specificity Score',
+            'Financial Quality Score',
+            'Reasoning Coherence',
+            'Citation Density (per 100 words)',
+            'Factor Coverage',
+            'Actionable Recommendations',
+            'Estimated Cost (USD)'
         ]
+
+        rag_quality = [
+            f"{df[df['system']=='rag']['composite_quality_score'].mean():.1f}",
+            f"{df[df['system']=='rag']['completeness_score'].mean():.1f}",
+            f"{df[df['system']=='rag']['specificity_score'].mean():.1f}",
+            f"{df[df['system']=='rag']['financial_quality_score'].mean():.1f}",
+            f"{df[df['system']=='rag']['reasoning_coherence'].mean():.1f}",
+            f"{df[df['system']=='rag']['citation_density'].mean():.2f}",
+            f"{df[df['system']=='rag']['factor_coverage'].mean():.1f}",
+            f"{df[df['system']=='rag']['actionable_recommendations'].mean():.1f}",
+            f"${df[df['system']=='rag']['estimated_cost_usd'].sum():.6f}"
+        ]
+
+        agent_quality = [
+            f"{df[df['system']=='agent']['composite_quality_score'].mean():.1f}",
+            f"{df[df['system']=='agent']['completeness_score'].mean():.1f}",
+            f"{df[df['system']=='agent']['specificity_score'].mean():.1f}",
+            f"{df[df['system']=='agent']['financial_quality_score'].mean():.1f}",
+            f"{df[df['system']=='agent']['reasoning_coherence'].mean():.1f}",
+            f"{df[df['system']=='agent']['citation_density'].mean():.2f}",
+            f"{df[df['system']=='agent']['factor_coverage'].mean():.1f}",
+            f"{df[df['system']=='agent']['actionable_recommendations'].mean():.1f}",
+            f"${df[df['system']=='agent']['estimated_cost_usd'].sum():.6f}"
+        ]
+
+        base_metrics.extend(quality_metrics)
+        rag_base.extend(rag_quality)
+        agent_base.extend(agent_quality)
+
+    summary = {
+        'Metric': base_metrics,
+        'RAG Baseline': rag_base,
+        'FinRobot Agent': agent_base
     }
 
     summary_df = pd.DataFrame(summary)
     summary_df.to_csv(f'{OUTPUT_DIR}/summary_statistics.csv', index=False)
 
     # Also create LaTeX table for paper
-    latex_table = summary_df.to_latex(index=False, caption='Comparative Performance Metrics: FinRobot Agent vs RAG Baseline', label='tab:performance')
+    latex_table = summary_df.to_latex(index=False, caption='Comprehensive Performance and Quality Metrics: FinRobot Agent vs RAG Baseline', label='tab:performance')
     with open(f'{OUTPUT_DIR}/summary_table.tex', 'w') as f:
         f.write(latex_table)
 
@@ -281,6 +492,7 @@ def main():
     print(f"Loaded {len(df)} experiment results")
     print(f"RAG experiments: {len(df[df['system']=='rag'])}")
     print(f"Agent experiments: {len(df[df['system']=='agent'])}")
+    print(f"Columns available: {', '.join(df.columns[:10])}...")
 
     print("\nGenerating visualizations...")
     create_latency_comparison(df)
@@ -289,14 +501,25 @@ def main():
     create_sector_analysis(df)
     create_tradeoff_scatter(df)
 
+    # New quality-focused visualizations
+    print("\nGenerating quality metrics visualizations...")
+    create_quality_score_comparison(df)
+    create_cost_benefit_analysis(df)
+    create_latency_quality_tradeoff(df)
+
     print("\nGenerating summary statistics...")
     summary_df = create_summary_table(df)
     print("\n" + "="*60)
-    print("SUMMARY STATISTICS TABLE")
+    print("COMPREHENSIVE METRICS SUMMARY")
     print("="*60)
     print(summary_df.to_string(index=False))
 
     print(f"\n✅ Analysis complete! All figures saved to {OUTPUT_DIR}/")
+    print(f"Total visualizations: 8")
+    print(f"  - Performance: latency_comparison, reasoning_depth, response_quality, sector_analysis")
+    print(f"  - Trade-offs: tradeoff_scatter, latency_quality_tradeoff")
+    print(f"  - Quality: quality_scores, cost_benefit")
+    print(f"  - Tables: summary_statistics.csv, summary_table.tex")
 
 
 if __name__ == "__main__":

@@ -8,3 +8,12 @@ Average Reasoning Steps,1.0,11.5
 Average Response Length (chars),720,1563
 Average Completion Tokens,99,211
 Total Experiments,24,24
+Composite Quality Score,61.3,78.2
+Completeness Score,93.3,100.0
+Specificity Score,46.7,100.0
+Financial Quality Score,41.6,45.2
+Reasoning Coherence,52.7,59.6
+Citation Density (per 100 words),5.14,14.36
+Factor Coverage,7.7,8.3
+Actionable Recommendations,2.0,1.8
+Estimated Cost (USD),$0.009811,$0.169197

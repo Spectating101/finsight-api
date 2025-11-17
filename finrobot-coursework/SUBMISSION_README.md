@@ -92,14 +92,30 @@ Executable tools:
 
 ## Key Findings
 
-### Quantitative Results (Synthetic - 48 experiments)
+### Quantitative Results (Synthetic - 48 experiments, 19+ metrics)
 
+**Performance Metrics:**
 | Metric | RAG Baseline | FinRobot Agent | Ratio |
 |--------|-------------|----------------|-------|
 | Avg Latency | 6.15s | 40.74s | 6.63× |
 | Tool Calls | 0 | 4.1 | - |
 | Reasoning Steps | 1 | 11.5 | 11.5× |
 | Response Length | 720 chars | 1563 chars | 2.17× |
+
+**Quality Metrics:**
+| Metric | RAG Baseline | FinRobot Agent | Ratio |
+|--------|-------------|----------------|-------|
+| Composite Quality Score | 61.3/100 | 78.2/100 | 1.28× |
+| Completeness Score | 93.3/100 | 100.0/100 | 1.07× |
+| Specificity Score | 46.7/100 | 100.0/100 | 2.14× |
+| Citation Density | 5.14/100w | 14.36/100w | 2.79× |
+
+**Cost Metrics:**
+| Metric | RAG Baseline | FinRobot Agent | Ratio |
+|--------|-------------|----------------|-------|
+| Avg Cost per Query | $0.000409 | $0.007050 | 17.2× |
+| Quality per $0.001 | 6.24 points | 0.46 points | 13.5× |
+| Quality per second | 9.96 pts/s | 1.92 pts/s | 5.2× |
 
 ### Real API Validation (Cerebras - 3 stocks)
 
@@ -110,13 +126,17 @@ Executable tools:
 
 ### Core Trade-off
 
-**Agent systems provide deeper analysis through iterative reasoning and tool utilization, but at a speed cost that varies significantly with infrastructure (1.2× to 6.6× slower depending on API).**
+**Agent systems provide 1.28× higher quality and 2.14× higher specificity through iterative reasoning and tool utilization, but at significant cost:**
+- **6.6× slower** response time
+- **17.2× more expensive** per query
+- **13.5× lower cost efficiency** (quality per dollar)
 
 ### Practical Implications
 
-- Use **Agents** when thoroughness and transparency matter
-- Use **RAG** when speed and cost efficiency are critical
+- Use **Agents** when quality, thoroughness, and transparency matter (due diligence, audits)
+- Use **RAG** when speed and cost efficiency are critical (real-time trading, high-volume)
 - Consider **hybrid approaches** for balanced requirements
+- **Infrastructure matters**: Fast APIs (Cerebras) reduce speed penalty from 6.6× to 1.2×
 
 ---
 
@@ -155,7 +175,7 @@ python scripts/analyze_results.py
 
 | Category | Metric | Value |
 |----------|--------|-------|
-| **Code Quality** | Production Lines | 8,249 |
+| **Code Quality** | Production Lines | 8,500+ |
 | | Type Hints | 100% |
 | | Docstrings | 100% |
 | **Testing** | Total Tests | 94+ |
@@ -165,9 +185,12 @@ python scripts/analyze_results.py
 | | Stocks Tested | 8 |
 | | Tasks per Stock | 3 |
 | | Sectors Covered | 6 |
-| **Analysis** | Figures Generated | 5 |
+| | **Metrics Tracked** | **19+** |
+| **Analysis** | Figures Generated | 8 |
 | | File Formats | PNG, PDF, CSV, LaTeX |
-| | Statistical Metrics | 9+ per system |
+| | Quality Metrics | 6 dimensions |
+| | Cost Metrics | 3 dimensions |
+| | Performance Metrics | 6 dimensions |
 
 ---
 

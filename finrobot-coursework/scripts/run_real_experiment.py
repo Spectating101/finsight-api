@@ -15,6 +15,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import autogen
 import yfinance as yf
 
+from finrobot.experiments.quality_scorer import (
+    score_response,
+    quality_metrics_to_dict,
+    calculate_composite_quality_score
+)
+
 # Configuration
 OAI_CONFIG = "OAI_CONFIG_LIST"
 MODEL = "llama-3.3-70b"
@@ -98,7 +104,19 @@ Be specific and concise."""
     output = response.choices[0].message.content
     total_time = time.time() - start_time
 
-    print(f"  [RAG] {ticker} done in {total_time:.2f}s")
+    # Calculate quality metrics
+    prompt_tokens = response.usage.prompt_tokens if hasattr(response.usage, 'prompt_tokens') else 500
+    completion_tokens = response.usage.completion_tokens if hasattr(response.usage, 'completion_tokens') else len(output.split())
+
+    quality = score_response(
+        response=output,
+        task="prediction",
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        model=MODEL
+    )
+
+    print(f"  [RAG] {ticker} done in {total_time:.2f}s (Quality: {calculate_composite_quality_score(quality):.1f}/100)")
 
     return {
         "system": "rag",
@@ -112,8 +130,12 @@ Be specific and concise."""
         "tool_calls": 0,
         "reasoning_steps": 1,
         "response_length": len(output),
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
         "timestamp": get_current_date(),
         "data_source": "real_cerebras_api",
+        "quality_metrics": quality_metrics_to_dict(quality),
+        "composite_quality_score": calculate_composite_quality_score(quality),
     }
 
 
@@ -192,7 +214,19 @@ Reply TERMINATE when done."""
     final_response = transcript.split("Analyst")[-1] if "Analyst" in transcript else transcript
     reasoning_steps = transcript.count("Analyst") + transcript.count("User")
 
-    print(f"  [AGENT] {ticker} done in {total_time:.2f}s ({len(tool_calls)} tools)")
+    # Estimate tokens (AutoGen doesn't easily expose this)
+    prompt_tokens = reasoning_steps * 1000  # Rough estimate
+    completion_tokens = len(final_response.split())
+
+    quality = score_response(
+        response=final_response,
+        task="prediction",
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        model=MODEL
+    )
+
+    print(f"  [AGENT] {ticker} done in {total_time:.2f}s ({len(tool_calls)} tools, Quality: {calculate_composite_quality_score(quality):.1f}/100)")
 
     return {
         "system": "agent",
@@ -205,8 +239,12 @@ Reply TERMINATE when done."""
         "tool_calls_detail": tool_calls,
         "reasoning_steps": reasoning_steps,
         "response_length": len(final_response),
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
         "timestamp": get_current_date(),
         "data_source": "real_cerebras_api",
+        "quality_metrics": quality_metrics_to_dict(quality),
+        "composite_quality_score": calculate_composite_quality_score(quality),
     }
 
 
@@ -260,19 +298,30 @@ def main():
 
     if rag_results:
         rag_lat = [r["latency_total"] for r in rag_results]
+        rag_quality = [r.get("composite_quality_score", 0) for r in rag_results]
+        rag_costs = [r.get("quality_metrics", {}).get("estimated_cost_usd", 0) for r in rag_results]
         print(f"\nRAG: {len(rag_results)} experiments")
         print(f"  Avg Latency: {sum(rag_lat)/len(rag_lat):.2f}s")
+        print(f"  Avg Quality Score: {sum(rag_quality)/len(rag_quality):.1f}/100")
+        print(f"  Avg Cost: ${sum(rag_costs)/len(rag_costs):.6f}")
 
     if agent_results:
         agent_lat = [r["latency_total"] for r in agent_results]
         agent_tools = [r["tool_calls"] for r in agent_results]
+        agent_quality = [r.get("composite_quality_score", 0) for r in agent_results]
+        agent_costs = [r.get("quality_metrics", {}).get("estimated_cost_usd", 0) for r in agent_results]
         print(f"\nAgent: {len(agent_results)} experiments")
         print(f"  Avg Latency: {sum(agent_lat)/len(agent_lat):.2f}s")
         print(f"  Avg Tool Calls: {sum(agent_tools)/len(agent_tools):.1f}")
+        print(f"  Avg Quality Score: {sum(agent_quality)/len(agent_quality):.1f}/100")
+        print(f"  Avg Cost: ${sum(agent_costs)/len(agent_costs):.6f}")
 
     if rag_results and agent_results:
-        ratio = (sum(agent_lat)/len(agent_lat)) / (sum(rag_lat)/len(rag_lat))
-        print(f"\nLatency Ratio: {ratio:.2f}x")
+        lat_ratio = (sum(agent_lat)/len(agent_lat)) / (sum(rag_lat)/len(rag_lat))
+        quality_ratio = (sum(agent_quality)/len(agent_quality)) / (sum(rag_quality)/len(rag_quality)) if sum(rag_quality) > 0 else 1.0
+        print(f"\nComparative Analysis:")
+        print(f"  Latency Ratio: {lat_ratio:.2f}x (Agent slower)")
+        print(f"  Quality Ratio: {quality_ratio:.2f}x (Agent better)")
 
     print(f"\nSaved: {OUTPUT_DIR}/real_experiment_{timestamp}.json")
     return all_results
