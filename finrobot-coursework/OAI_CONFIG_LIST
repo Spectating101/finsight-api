@@ -1,26 +1,8 @@
 [
   {
-    "model": "llama-3.3-70b-versatile",
-    "api_key": "YOUR_GROQ_API_KEY_HERE",
-    "base_url": "https://api.groq.com/openai/v1",
-    "api_type": "openai"
-  },
-  {
-    "model": "llama-3.1-70b-versatile",
-    "api_key": "YOUR_GROQ_API_KEY_HERE",
-    "base_url": "https://api.groq.com/openai/v1",
-    "api_type": "openai"
-  },
-  {
-    "model": "mixtral-8x7b-32768",
-    "api_key": "YOUR_GROQ_API_KEY_HERE",
-    "base_url": "https://api.groq.com/openai/v1",
-    "api_type": "openai"
-  },
-  {
-    "model": "gemma2-9b-it",
-    "api_key": "YOUR_GROQ_API_KEY_HERE",
-    "base_url": "https://api.groq.com/openai/v1",
+    "model": "llama-3.3-70b",
+    "api_key": "YOUR_CEREBRAS_API_KEY_HERE",
+    "base_url": "https://api.cerebras.ai/v1",
     "api_type": "openai"
   }
 ]
