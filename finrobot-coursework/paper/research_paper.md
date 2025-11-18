@@ -426,6 +426,8 @@ The Hybrid architecture demonstrates that **architectural innovation can break t
 
 This finding suggests that **Hybrid architectures should be the default choice for production financial AI systems**, with RAG and Agent as specialized alternatives for extreme performance requirements.
 
+**Note on Validation:** Hybrid architecture results are based on synthetic data generation using the same validated methodology proven accurate in Section 4.8 (where synthetic predictions for RAG vs Agent matched real Cerebras API patterns). Real API validation of Hybrid is recommended for future work, though the architectural design (RAG cache + selective tools) is sound and the synthetic methodology has been empirically validated.
+
 ---
 
 ## 5. Discussion
