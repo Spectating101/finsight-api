@@ -1,0 +1,73 @@
+system,ticker,sector,task,latency_total,tool_calls,reasoning_steps,response_length,prompt_tokens,completion_tokens,completeness_score,specificity_score,financial_quality_score,reasoning_coherence,composite_quality_score,estimated_cost_usd,citation_density,factor_coverage,actionable_recommendations
+rag,AAPL,Technology,prediction,4.475,0,1,741,623,105,100.0,40,31.67,100,67.92,0.000451,4.76,7,1
+agent,AAPL,Technology,prediction,47.21,5,9,1735,8937,225,100.0,100,57.67,100,89.42,0.005451,9.78,10,2
+hybrid,AAPL,Technology,prediction,11.366,1,6,1041,4116,140,100.0,100,34.33,90.0,81.58,0.002539,10.71,8,1
+rag,AAPL,Technology,risk_analysis,6.886,0,1,805,586,109,100.0,40,50.0,45.0,61.5,0.000432,3.67,9,2
+agent,AAPL,Technology,risk_analysis,50.051,5,11,1483,11660,199,100.0,100,37.0,30.0,70.25,0.007037,17.59,6,2
+hybrid,AAPL,Technology,risk_analysis,8.958,2,4,945,2736,132,100.0,100,39.67,0,64.92,0.001719,15.91,7,2
+rag,AAPL,Technology,opportunity,7.619,0,1,596,500,83,80.0,50,42.67,15.0,52.17,0.000361,6.02,7,3
+agent,AAPL,Technology,opportunity,47.375,3,13,1458,13403,209,100.0,100,37.0,45.0,73.25,0.008073,15.79,9,1
+hybrid,AAPL,Technology,opportunity,10.519,1,5,964,2885,137,80.0,100,39.67,15.0,63.92,0.00181,18.25,7,2
+rag,MSFT,Technology,prediction,7.889,0,1,751,513,105,100.0,40,31.67,100,67.92,0.000386,4.76,7,1
+agent,MSFT,Technology,prediction,33.992,3,11,1747,12914,224,100.0,100,57.67,100,89.42,0.007796,9.82,10,2
+hybrid,MSFT,Technology,prediction,16.741,3,7,1049,4277,137,100.0,100,42.0,90.0,83.5,0.002632,11.68,9,1
+rag,MSFT,Technology,risk_analysis,6.895,0,1,815,470,109,100.0,40,50.0,45.0,61.5,0.000363,3.67,9,2
+agent,MSFT,Technology,risk_analysis,50.216,4,13,1494,12389,199,100.0,100,37.0,30.0,70.25,0.007467,17.59,6,2
+hybrid,MSFT,Technology,risk_analysis,14.479,3,4,942,3328,129,100.0,100,37.0,0,64.25,0.002065,17.05,6,2
+rag,MSFT,Technology,opportunity,6.463,0,1,595,544,80,80.0,60,42.67,15.0,54.67,0.000384,7.5,7,3
+agent,MSFT,Technology,opportunity,43.239,5,10,1462,9160,209,100.0,100,45.0,45.0,75.25,0.00557,15.79,9,2
+hybrid,MSFT,Technology,opportunity,8.615,1,4,963,2288,133,80.0,100,39.67,15.0,63.92,0.001455,19.55,7,2
+rag,TSLA,Consumer Cyclical,prediction,4.511,0,1,759,638,106,100.0,45,34.33,85.0,66.83,0.00046,4.72,8,1
+agent,TSLA,Consumer Cyclical,prediction,40.038,5,11,1735,11286,225,100.0,100,57.67,100,89.42,0.006836,9.78,10,2
+hybrid,TSLA,Consumer Cyclical,prediction,11.704,2,5,1016,2935,135,100.0,100,34.33,90.0,81.58,0.001838,11.11,8,1
+rag,TSLA,Consumer Cyclical,risk_analysis,7.176,0,1,806,548,109,100.0,40,50.0,45.0,61.5,0.000409,3.67,9,2
+agent,TSLA,Consumer Cyclical,risk_analysis,48.026,4,14,1486,13048,199,100.0,100,37.0,30.0,70.25,0.007856,17.59,6,2
+hybrid,TSLA,Consumer Cyclical,risk_analysis,13.696,1,6,920,3360,127,100.0,100,37.0,0,64.25,0.002083,16.54,6,2
+rag,TSLA,Consumer Cyclical,opportunity,7.436,0,1,599,557,82,80.0,60,42.67,15.0,54.67,0.000393,7.32,7,3
+agent,TSLA,Consumer Cyclical,opportunity,48.433,5,11,1451,9020,209,100.0,100,45.0,45.0,75.25,0.005487,15.79,9,2
+hybrid,TSLA,Consumer Cyclical,opportunity,11.034,1,5,932,3370,131,80.0,100,39.67,15.0,63.92,0.002092,19.08,7,2
+rag,JPM,Financial Services,prediction,6.177,0,1,767,650,108,100.0,45,34.33,100,69.83,0.000469,4.63,8,1
+agent,JPM,Financial Services,prediction,47.999,3,13,1756,12012,227,100.0,100,49.67,100,87.42,0.007266,9.69,10,1
+hybrid,JPM,Financial Services,prediction,17.798,2,7,1042,5607,143,100.0,100,34.33,100,83.58,0.003421,10.49,8,1
+rag,JPM,Financial Services,risk_analysis,4.122,0,1,814,512,111,100.0,40,50.0,60.0,64.5,0.00039,3.6,9,2
+agent,JPM,Financial Services,risk_analysis,49.505,4,13,1484,14079,200,100.0,100,37.0,45.0,73.25,0.008465,17.5,6,2
+hybrid,JPM,Financial Services,risk_analysis,12.217,2,5,951,3325,135,100.0,100,37.0,60.0,76.25,0.002068,15.56,6,2
+rag,JPM,Financial Services,opportunity,5.95,0,1,606,465,84,80.0,60,42.67,30.0,57.67,0.000341,7.14,7,3
+agent,JPM,Financial Services,opportunity,37.35,5,9,1460,9054,211,100.0,100,45.0,60.0,78.25,0.005509,15.64,9,2
+hybrid,JPM,Financial Services,opportunity,16.552,2,7,963,4998,139,80.0,100,39.67,75.0,75.92,0.003059,17.99,7,2
+rag,JNJ,Healthcare,prediction,7.441,0,1,764,552,107,100.0,45,34.33,85.0,66.83,0.00041,4.67,8,1
+agent,JNJ,Healthcare,prediction,29.6,5,8,1746,8064,225,100.0,100,49.67,100,87.42,0.004936,9.78,10,1
+hybrid,JNJ,Healthcare,prediction,12.338,1,5,1043,4050,141,100.0,100,42.0,90.0,83.5,0.002501,10.64,9,1
+rag,JNJ,Healthcare,risk_analysis,5.046,0,1,811,556,110,100.0,40,50.0,45.0,61.5,0.000415,3.64,9,2
+agent,JNJ,Healthcare,risk_analysis,35.956,4,12,1481,13224,199,100.0,100,37.0,30.0,70.25,0.007959,17.59,6,2
+hybrid,JNJ,Healthcare,risk_analysis,12.208,2,4,949,2340,134,100.0,100,47.33,0,66.83,0.001486,15.67,8,2
+rag,JNJ,Healthcare,opportunity,6.095,0,1,594,630,82,80.0,60,42.67,15.0,54.67,0.000436,7.32,7,3
+agent,JNJ,Healthcare,opportunity,44.633,3,15,1465,14310,211,100.0,100,45.0,45.0,75.25,0.00861,15.64,9,2
+hybrid,JNJ,Healthcare,opportunity,15.312,1,7,968,4340,138,80.0,100,42.33,15.0,64.58,0.00267,18.12,8,2
+rag,XOM,Energy,prediction,7.53,0,1,752,598,106,100.0,40,31.67,100,67.92,0.000437,4.72,7,1
+agent,XOM,Energy,prediction,44.213,4,10,1750,8070,226,100.0,100,49.67,100,87.42,0.00494,9.73,10,1
+hybrid,XOM,Energy,prediction,12.317,2,4,1023,3036,139,100.0,100,34.33,100,83.58,0.001901,10.79,8,1
+rag,XOM,Energy,risk_analysis,3.657,0,1,817,479,110,100.0,40,50.0,45.0,61.5,0.00037,3.64,9,2
+agent,XOM,Energy,risk_analysis,42.073,3,11,1495,11352,200,100.0,100,37.0,30.0,70.25,0.006856,17.5,6,2
+hybrid,XOM,Energy,risk_analysis,9.708,1,5,924,2815,131,100.0,100,37.0,15.0,67.25,0.001764,16.03,6,2
+rag,XOM,Energy,opportunity,4.778,0,1,598,557,82,80.0,60,42.67,15.0,54.67,0.000393,7.32,7,3
+agent,XOM,Energy,opportunity,40.426,5,9,1463,10737,210,100.0,100,45.0,45.0,75.25,0.006501,15.71,9,2
+hybrid,XOM,Energy,opportunity,16.165,3,5,950,2880,136,80.0,100,39.67,30.0,66.92,0.001807,18.38,7,2
+rag,WMT,Consumer Defensive,prediction,7.048,0,1,743,618,105,100.0,40,31.67,85.0,64.92,0.000448,4.76,7,1
+agent,WMT,Consumer Defensive,prediction,40.43,4,11,1736,10010,225,100.0,100,57.67,100,89.42,0.006084,9.78,10,2
+hybrid,WMT,Consumer Defensive,prediction,17.243,2,7,1023,4256,136,100.0,100,42.0,100,85.5,0.002618,11.03,9,1
+rag,WMT,Consumer Defensive,risk_analysis,4.275,0,1,806,584,109,100.0,40,50.0,45.0,61.5,0.000431,3.67,9,2
+agent,WMT,Consumer Defensive,risk_analysis,51.897,5,12,1475,10644,198,100.0,100,37.0,30.0,70.25,0.006436,17.68,6,2
+hybrid,WMT,Consumer Defensive,risk_analysis,16.456,3,7,928,4466,128,100.0,100,50.0,15.0,70.5,0.002736,16.41,9,2
+rag,WMT,Consumer Defensive,opportunity,6.985,0,1,602,594,82,80.0,50,42.67,15.0,52.17,0.000415,6.1,7,3
+agent,WMT,Consumer Defensive,opportunity,56.071,5,15,1453,14625,209,100.0,100,45.0,45.0,75.25,0.008794,15.79,9,2
+hybrid,WMT,Consumer Defensive,opportunity,14.474,3,4,934,3000,132,80.0,100,42.33,30.0,67.58,0.001874,18.94,8,2
+rag,NVDA,Technology,prediction,6.0,0,1,757,482,105,100.0,45,31.67,85.0,66.17,0.000367,4.76,7,1
+agent,NVDA,Technology,prediction,37.626,5,9,1756,9090,226,100.0,100,49.67,100,87.42,0.005542,9.73,10,1
+hybrid,NVDA,Technology,prediction,14.67,2,5,1010,3260,135,100.0,100,34.33,90.0,81.58,0.00203,11.11,8,1
+rag,NVDA,Technology,risk_analysis,5.147,0,1,813,545,109,100.0,40,50.0,45.0,61.5,0.000408,3.67,9,2
+agent,NVDA,Technology,risk_analysis,39.292,5,9,1483,9261,198,100.0,100,37.0,30.0,70.25,0.00562,17.68,6,2
+hybrid,NVDA,Technology,risk_analysis,12.333,3,4,918,2920,127,100.0,100,39.67,0,64.92,0.001823,16.54,7,2
+rag,NVDA,Technology,opportunity,5.167,0,1,602,589,82,80.0,50,42.67,15.0,52.17,0.000412,6.1,7,3
+agent,NVDA,Technology,opportunity,35.856,5,8,1466,6544,210,100.0,100,45.0,45.0,75.25,0.004027,15.71,9,2
+hybrid,NVDA,Technology,opportunity,14.942,3,5,937,3840,131,80.0,100,39.67,15.0,63.92,0.002369,19.08,7,2

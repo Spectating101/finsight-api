@@ -1,0 +1,1174 @@
+[
+  {
+    "system": "hybrid",
+    "ticker": "AAPL",
+    "company_name": "Apple Inc.",
+    "sector": "Technology",
+    "task": "prediction",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Analysis: AAPL (Apple Inc.)**\n\n**Background Context** (from cached knowledge base):\nApple Inc. is a technology leader with strong brand loyalty, premium pricing power, and ecosystem lock-in through hardware-software integration.\n\n**Live Market Data Analysis:**\n\nAfter retrieving current market data, I've identified key factors:\n\n**Quantified Price Factors:**\n1. **Current Price:** $440.29 with RSI at 61.1 (indicates moderate momentum without overbought conditions)\n2. **Technical Setup:** Price 7.2% above 50-day SMA ($341.30), suggesting bullish positioning\n3. **Volatility:** 30-day realized vol of 3.00%, translating to $3.55 expected daily swings\n\n**Risk Assessment:**\n- P/E of 25.0x vs sector 21.5x indicates fair valuation\n- Maximum drawdown risk: 14.0% based on recent volatility patterns\n\n**1-Week Prediction:**\nExpected upward movement of 0.6% based on:\n- Technical momentum (RSI, volume trends)\n- Recent price action relative to support levels\n- Sector rotation patterns\n\nConfidence: 73% given current market conditions.",
+    "latency_total": 11.366,
+    "tool_calls": 1,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "AAPL"
+      ]
+    ],
+    "reasoning_steps": 6,
+    "response_length": 1041,
+    "prompt_tokens": 4116,
+    "completion_tokens": 140,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 15,
+      "vague_statements_count": 0,
+      "citation_density": 10.71,
+      "financial_quality_score": 34.33,
+      "factor_coverage": 8,
+      "risk_factors_count": 2,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 1,
+      "reasoning_coherence": 90.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 6,
+      "unsupported_claims": 0,
+      "total_tokens": 4256,
+      "estimated_cost_usd": 0.002539,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 81.58
+  },
+  {
+    "system": "hybrid",
+    "ticker": "AAPL",
+    "company_name": "Apple Inc.",
+    "sector": "Technology",
+    "task": "risk_analysis",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Risk Analysis: AAPL (Apple Inc.)**\n\n**Strategic Context** (cached):\nApple Inc. is a technology leader with strong brand loyalty, premium pricing power, and ecosystem lock-in through hardware-software integration.\n\n**Live Risk Metrics Analysis:**\n\n**Top 3 Quantified Risks:**\n\n**1. VALUATION RISK (Severity: HIGH)**\n- Current P/E: 46.1x vs historical 20.6x\n- Price-to-sales: 5.5x\n- Downside if multiple compression: 20.8%\n- Probability: 36% over next quarter\n\n**2. TECHNICAL RISK (Severity: MEDIUM)**\n- Price vs SMA50: +5.7% (moderate extension)\n- RSI at 65.2 (approaching overbought)\n- Pullback risk: 8.3% to support at $222.97\n\n**3. VOLATILITY RISK (Severity: MEDIUM)**\n- Realized volatility: 3.22%\n- VaR (95%): $17.19 daily potential loss\n- Weekly swing range: $27.01\n\n**Mitigation Recommendations:**\n- Position sizing: Limit to 3.3% of portfolio\n- Stop-loss: $423.13 (9.0% below current)\n- Consider hedging via sector diversification",
+    "latency_total": 8.958,
+    "tool_calls": 2,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "AAPL"
+      ],
+      [
+        "get_stock_info",
+        "AAPL"
+      ]
+    ],
+    "reasoning_steps": 4,
+    "response_length": 945,
+    "prompt_tokens": 2736,
+    "completion_tokens": 132,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 21,
+      "vague_statements_count": 0,
+      "citation_density": 15.91,
+      "financial_quality_score": 39.67,
+      "factor_coverage": 7,
+      "risk_factors_count": 8,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 0,
+      "unsupported_claims": 0,
+      "total_tokens": 2868,
+      "estimated_cost_usd": 0.001719,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 64.92
+  },
+  {
+    "system": "hybrid",
+    "ticker": "AAPL",
+    "company_name": "Apple Inc.",
+    "sector": "Technology",
+    "task": "opportunity",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Opportunity Analysis: AAPL (Apple Inc.)**\n\n**Strategic Positioning** (cached):\nApple Inc. is a technology leader with strong brand loyalty, premium pricing power, and ecosystem lock-in through hardware-software integration.\n\n**Live Market Opportunities:**\n\n**OPPORTUNITY 1: Technical Entry Point** (Confidence: 75%)\n\n*Real-time Data:*\n- Entry: $268.33 (current price)\n- Key resistance: $377.67\n- Volume: 22M shares (above 20-day avg)\n- RSI: 54.6 (healthy, not overbought)\n\n*Trade Setup:*\n- Target 1: $192.33 (+8.2%)\n- Target 2: $273.87 (+17.4%)\n- Stop: $428.26 (-4.2%)\n- Risk/Reward: 2.8:1\n\n**OPPORTUNITY 2: Fundamental Value** (Confidence: 74%)\n\n*Analysis:*\n- PEG ratio: 1.37 (reasonable for growth)\n- Revenue growth: 11.6% YoY\n- Margin expansion trend\n- Analyst consensus: Strong Buy (avg target $394.72)\n\n**Actionable Strategy:**\n- Build 62% position now at $315.54\n- Add on pullback to $285.44\n- 3-month holding period\n- Exit if breaks $172.47 support",
+    "latency_total": 10.519,
+    "tool_calls": 1,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "AAPL"
+      ]
+    ],
+    "reasoning_steps": 5,
+    "response_length": 964,
+    "prompt_tokens": 2885,
+    "completion_tokens": 137,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 80.0,
+      "num_requested_aspects": 5,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 25,
+      "vague_statements_count": 0,
+      "citation_density": 18.25,
+      "financial_quality_score": 39.67,
+      "factor_coverage": 7,
+      "risk_factors_count": 1,
+      "opportunity_factors_count": 5,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 15.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 1,
+      "unsupported_claims": 0,
+      "total_tokens": 3022,
+      "estimated_cost_usd": 0.00181,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 63.92
+  },
+  {
+    "system": "hybrid",
+    "ticker": "MSFT",
+    "company_name": "Microsoft Corporation",
+    "sector": "Technology",
+    "task": "prediction",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Analysis: MSFT (Microsoft Corporation)**\n\n**Background Context** (from cached knowledge base):\nMicrosoft dominates enterprise cloud computing with Azure, Office 365 subscription revenue, and LinkedIn professional network integration.\n\n**Live Market Data Analysis:**\n\nAfter retrieving current market data, I've identified key factors:\n\n**Quantified Price Factors:**\n1. **Current Price:** $204.18 with RSI at 55.3 (indicates moderate momentum without overbought conditions)\n2. **Technical Setup:** Price 7.8% above 50-day SMA ($341.92), suggesting bullish positioning\n3. **Volatility:** 30-day realized vol of 2.72%, translating to $11.98 expected daily swings\n\n**Risk Assessment:**\n- P/E of 21.3x vs sector 25.0x indicates growth expectations\n- Maximum drawdown risk: 14.4% based on recent volatility patterns\n\n**1-Week Prediction:**\nExpected modest gain of -0.6% based on:\n- Technical momentum (RSI, volume trends)\n- Recent price action relative to support levels\n- Sector rotation patterns\n\nConfidence: 80% given current market conditions.",
+    "latency_total": 16.741,
+    "tool_calls": 3,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "MSFT"
+      ],
+      [
+        "get_stock_info",
+        "MSFT"
+      ],
+      [
+        "calculate_technicals",
+        "MSFT"
+      ]
+    ],
+    "reasoning_steps": 7,
+    "response_length": 1049,
+    "prompt_tokens": 4277,
+    "completion_tokens": 137,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 16,
+      "vague_statements_count": 0,
+      "citation_density": 11.68,
+      "financial_quality_score": 42.0,
+      "factor_coverage": 9,
+      "risk_factors_count": 2,
+      "opportunity_factors_count": 2,
+      "actionable_recommendations": 1,
+      "reasoning_coherence": 90.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 6,
+      "unsupported_claims": 0,
+      "total_tokens": 4414,
+      "estimated_cost_usd": 0.002632,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 83.5
+  },
+  {
+    "system": "hybrid",
+    "ticker": "MSFT",
+    "company_name": "Microsoft Corporation",
+    "sector": "Technology",
+    "task": "risk_analysis",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Risk Analysis: MSFT (Microsoft Corporation)**\n\n**Strategic Context** (cached):\nMicrosoft dominates enterprise cloud computing with Azure, Office 365 subscription revenue, and LinkedIn professional network integration.\n\n**Live Risk Metrics Analysis:**\n\n**Top 3 Quantified Risks:**\n\n**1. VALUATION RISK (Severity: HIGH)**\n- Current P/E: 29.4x vs historical 33.1x\n- Price-to-sales: 9.3x\n- Downside if multiple compression: 14.0%\n- Probability: 32% over next quarter\n\n**2. TECHNICAL RISK (Severity: MEDIUM)**\n- Price vs SMA50: +4.5% (moderate extension)\n- RSI at 62.1 (approaching overbought)\n- Pullback risk: 9.8% to support at $421.46\n\n**3. VOLATILITY RISK (Severity: MEDIUM)**\n- Realized volatility: 3.11%\n- VaR (95%): $7.52 daily potential loss\n- Weekly swing range: $32.70\n\n**Mitigation Recommendations:**\n- Position sizing: Limit to 3.2% of portfolio\n- Stop-loss: $342.97 (9.3% below current)\n- Consider hedging via protective puts",
+    "latency_total": 14.479,
+    "tool_calls": 3,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "MSFT"
+      ],
+      [
+        "get_stock_info",
+        "MSFT"
+      ],
+      [
+        "calculate_technicals",
+        "MSFT"
+      ]
+    ],
+    "reasoning_steps": 4,
+    "response_length": 942,
+    "prompt_tokens": 3328,
+    "completion_tokens": 129,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 22,
+      "vague_statements_count": 0,
+      "citation_density": 17.05,
+      "financial_quality_score": 37.0,
+      "factor_coverage": 6,
+      "risk_factors_count": 8,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 0,
+      "unsupported_claims": 0,
+      "total_tokens": 3457,
+      "estimated_cost_usd": 0.002065,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 64.25
+  },
+  {
+    "system": "hybrid",
+    "ticker": "MSFT",
+    "company_name": "Microsoft Corporation",
+    "sector": "Technology",
+    "task": "opportunity",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Opportunity Analysis: MSFT (Microsoft Corporation)**\n\n**Strategic Positioning** (cached):\nMicrosoft dominates enterprise cloud computing with Azure, Office 365 subscription revenue, and LinkedIn professional network integration.\n\n**Live Market Opportunities:**\n\n**OPPORTUNITY 1: Technical Entry Point** (Confidence: 81%)\n\n*Real-time Data:*\n- Entry: $289.46 (current price)\n- Key resistance: $263.08\n- Volume: 17M shares (above 20-day avg)\n- RSI: 61.3 (healthy, not overbought)\n\n*Trade Setup:*\n- Target 1: $300.19 (+7.5%)\n- Target 2: $458.60 (+17.1%)\n- Stop: $252.27 (-4.1%)\n- Risk/Reward: 3.6:1\n\n**OPPORTUNITY 2: Fundamental Value** (Confidence: 68%)\n\n*Analysis:*\n- PEG ratio: 1.66 (reasonable for growth)\n- Revenue growth: 21.8% YoY\n- Margin expansion trend\n- Analyst consensus: Buy (avg target $212.28)\n\n**Actionable Strategy:**\n- Build 72% position now at $404.99\n- Add on pullback to $253.22\n- 12-month holding period\n- Exit if breaks $469.72 support",
+    "latency_total": 8.615,
+    "tool_calls": 1,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "MSFT"
+      ]
+    ],
+    "reasoning_steps": 4,
+    "response_length": 963,
+    "prompt_tokens": 2288,
+    "completion_tokens": 133,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 80.0,
+      "num_requested_aspects": 5,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 26,
+      "vague_statements_count": 0,
+      "citation_density": 19.55,
+      "financial_quality_score": 39.67,
+      "factor_coverage": 7,
+      "risk_factors_count": 1,
+      "opportunity_factors_count": 5,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 15.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 1,
+      "unsupported_claims": 0,
+      "total_tokens": 2421,
+      "estimated_cost_usd": 0.001455,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 63.92
+  },
+  {
+    "system": "hybrid",
+    "ticker": "TSLA",
+    "company_name": "Tesla, Inc.",
+    "sector": "Consumer Cyclical",
+    "task": "prediction",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Analysis: TSLA (Tesla, Inc.)**\n\n**Background Context** (from cached knowledge base):\nTesla leads electric vehicle innovation with vertical integration, energy storage, and autonomous driving development.\n\n**Live Market Data Analysis:**\n\nAfter retrieving current market data, I've identified key factors:\n\n**Quantified Price Factors:**\n1. **Current Price:** $328.91 with RSI at 64.3 (indicates moderate momentum without overbought conditions)\n2. **Technical Setup:** Price 7.8% above 50-day SMA ($395.23), suggesting bullish positioning\n3. **Volatility:** 30-day realized vol of 2.92%, translating to $6.41 expected daily swings\n\n**Risk Assessment:**\n- P/E of 34.6x vs sector 25.4x indicates fair valuation\n- Maximum drawdown risk: 13.7% based on recent volatility patterns\n\n**1-Week Prediction:**\nExpected upward movement of 2.2% based on:\n- Technical momentum (RSI, volume trends)\n- Recent price action relative to support levels\n- Sector rotation patterns\n\nConfidence: 71% given current market conditions.",
+    "latency_total": 11.704,
+    "tool_calls": 2,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "TSLA"
+      ],
+      [
+        "get_stock_info",
+        "TSLA"
+      ]
+    ],
+    "reasoning_steps": 5,
+    "response_length": 1016,
+    "prompt_tokens": 2935,
+    "completion_tokens": 135,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 15,
+      "vague_statements_count": 0,
+      "citation_density": 11.11,
+      "financial_quality_score": 34.33,
+      "factor_coverage": 8,
+      "risk_factors_count": 2,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 1,
+      "reasoning_coherence": 90.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 6,
+      "unsupported_claims": 0,
+      "total_tokens": 3070,
+      "estimated_cost_usd": 0.001838,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 81.58
+  },
+  {
+    "system": "hybrid",
+    "ticker": "TSLA",
+    "company_name": "Tesla, Inc.",
+    "sector": "Consumer Cyclical",
+    "task": "risk_analysis",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Risk Analysis: TSLA (Tesla, Inc.)**\n\n**Strategic Context** (cached):\nTesla leads electric vehicle innovation with vertical integration, energy storage, and autonomous driving development.\n\n**Live Risk Metrics Analysis:**\n\n**Top 3 Quantified Risks:**\n\n**1. VALUATION RISK (Severity: MEDIUM-HIGH)**\n- Current P/E: 39.5x vs historical 22.7x\n- Price-to-sales: 5.0x\n- Downside if multiple compression: 15.7%\n- Probability: 32% over next quarter\n\n**2. TECHNICAL RISK (Severity: MEDIUM)**\n- Price vs SMA50: +5.2% (moderate extension)\n- RSI at 64.5 (approaching overbought)\n- Pullback risk: 6.0% to support at $216.32\n\n**3. VOLATILITY RISK (Severity: MEDIUM)**\n- Realized volatility: 3.53%\n- VaR (95%): $13.89 daily potential loss\n- Weekly swing range: $11.61\n\n**Mitigation Recommendations:**\n- Position sizing: Limit to 4.2% of portfolio\n- Stop-loss: $313.64 (7.7% below current)\n- Consider hedging via protective puts",
+    "latency_total": 13.696,
+    "tool_calls": 1,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "TSLA"
+      ]
+    ],
+    "reasoning_steps": 6,
+    "response_length": 920,
+    "prompt_tokens": 3360,
+    "completion_tokens": 127,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 21,
+      "vague_statements_count": 0,
+      "citation_density": 16.54,
+      "financial_quality_score": 37.0,
+      "factor_coverage": 6,
+      "risk_factors_count": 8,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 0,
+      "unsupported_claims": 0,
+      "total_tokens": 3487,
+      "estimated_cost_usd": 0.002083,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 64.25
+  },
+  {
+    "system": "hybrid",
+    "ticker": "TSLA",
+    "company_name": "Tesla, Inc.",
+    "sector": "Consumer Cyclical",
+    "task": "opportunity",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Opportunity Analysis: TSLA (Tesla, Inc.)**\n\n**Strategic Positioning** (cached):\nTesla leads electric vehicle innovation with vertical integration, energy storage, and autonomous driving development.\n\n**Live Market Opportunities:**\n\n**OPPORTUNITY 1: Technical Entry Point** (Confidence: 75%)\n\n*Real-time Data:*\n- Entry: $157.13 (current price)\n- Key resistance: $216.38\n- Volume: 19M shares (above 20-day avg)\n- RSI: 60.0 (healthy, not overbought)\n\n*Trade Setup:*\n- Target 1: $382.13 (+6.1%)\n- Target 2: $466.78 (+16.6%)\n- Stop: $197.87 (-5.8%)\n- Risk/Reward: 3.5:1\n\n**OPPORTUNITY 2: Fundamental Value** (Confidence: 66%)\n\n*Analysis:*\n- PEG ratio: 1.86 (reasonable for growth)\n- Revenue growth: 21.6% YoY\n- Margin expansion trend\n- Analyst consensus: Buy (avg target $395.69)\n\n**Actionable Strategy:**\n- Build 96% position now at $351.53\n- Add on pullback to $458.27\n- 6-month holding period\n- Exit if breaks $272.88 support",
+    "latency_total": 11.034,
+    "tool_calls": 1,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "TSLA"
+      ]
+    ],
+    "reasoning_steps": 5,
+    "response_length": 932,
+    "prompt_tokens": 3370,
+    "completion_tokens": 131,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 80.0,
+      "num_requested_aspects": 5,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 25,
+      "vague_statements_count": 0,
+      "citation_density": 19.08,
+      "financial_quality_score": 39.67,
+      "factor_coverage": 7,
+      "risk_factors_count": 1,
+      "opportunity_factors_count": 5,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 15.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 1,
+      "unsupported_claims": 0,
+      "total_tokens": 3501,
+      "estimated_cost_usd": 0.002092,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 63.92
+  },
+  {
+    "system": "hybrid",
+    "ticker": "JPM",
+    "company_name": "JPMorgan Chase & Co.",
+    "sector": "Financial Services",
+    "task": "prediction",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Analysis: JPM (JPMorgan Chase & Co.)**\n\n**Background Context** (from cached knowledge base):\nJPMorgan Chase is the largest US bank by assets, with diversified revenue across consumer banking, investment banking, and asset management.\n\n**Live Market Data Analysis:**\n\nAfter retrieving current market data, I've identified key factors:\n\n**Quantified Price Factors:**\n1. **Current Price:** $267.74 with RSI at 58.9 (indicates moderate momentum without overbought conditions)\n2. **Technical Setup:** Price 4.0% above 50-day SMA ($310.77), suggesting bullish positioning\n3. **Volatility:** 30-day realized vol of 2.40%, translating to $6.10 expected daily swings\n\n**Risk Assessment:**\n- P/E of 26.2x vs sector 25.2x indicates modest premium\n- Maximum drawdown risk: 11.9% based on recent volatility patterns\n\n**1-Week Prediction:**\nExpected modest gain of 3.7% based on:\n- Technical momentum (RSI, volume trends)\n- Recent price action relative to support levels\n- Sector rotation patterns\n\nConfidence: 69% given current market conditions.",
+    "latency_total": 17.798,
+    "tool_calls": 2,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "JPM"
+      ],
+      [
+        "get_stock_info",
+        "JPM"
+      ]
+    ],
+    "reasoning_steps": 7,
+    "response_length": 1042,
+    "prompt_tokens": 5607,
+    "completion_tokens": 143,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 15,
+      "vague_statements_count": 0,
+      "citation_density": 10.49,
+      "financial_quality_score": 34.33,
+      "factor_coverage": 8,
+      "risk_factors_count": 2,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 1,
+      "reasoning_coherence": 100,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 10,
+      "unsupported_claims": 0,
+      "total_tokens": 5750,
+      "estimated_cost_usd": 0.003421,
+      "cost_per_insight": 5.9e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 83.58
+  },
+  {
+    "system": "hybrid",
+    "ticker": "JPM",
+    "company_name": "JPMorgan Chase & Co.",
+    "sector": "Financial Services",
+    "task": "risk_analysis",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Risk Analysis: JPM (JPMorgan Chase & Co.)**\n\n**Strategic Context** (cached):\nJPMorgan Chase is the largest US bank by assets, with diversified revenue across consumer banking, investment banking, and asset management.\n\n**Live Risk Metrics Analysis:**\n\n**Top 3 Quantified Risks:**\n\n**1. VALUATION RISK (Severity: MEDIUM-HIGH)**\n- Current P/E: 24.9x vs historical 18.2x\n- Price-to-sales: 6.3x\n- Downside if multiple compression: 18.2%\n- Probability: 33% over next quarter\n\n**2. TECHNICAL RISK (Severity: MEDIUM)**\n- Price vs SMA50: +9.8% (moderate extension)\n- RSI at 61.0 (approaching overbought)\n- Pullback risk: 11.0% to support at $177.65\n\n**3. VOLATILITY RISK (Severity: MEDIUM)**\n- Realized volatility: 2.14%\n- VaR (95%): $10.88 daily potential loss\n- Weekly swing range: $24.43\n\n**Mitigation Recommendations:**\n- Position sizing: Limit to 5.1% of portfolio\n- Stop-loss: $188.55 (9.2% below current)\n- Consider hedging via collar strategy",
+    "latency_total": 12.217,
+    "tool_calls": 2,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "JPM"
+      ],
+      [
+        "get_stock_info",
+        "JPM"
+      ]
+    ],
+    "reasoning_steps": 5,
+    "response_length": 951,
+    "prompt_tokens": 3325,
+    "completion_tokens": 135,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 21,
+      "vague_statements_count": 0,
+      "citation_density": 15.56,
+      "financial_quality_score": 37.0,
+      "factor_coverage": 6,
+      "risk_factors_count": 8,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 60.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 4,
+      "unsupported_claims": 0,
+      "total_tokens": 3460,
+      "estimated_cost_usd": 0.002068,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 76.25
+  },
+  {
+    "system": "hybrid",
+    "ticker": "JPM",
+    "company_name": "JPMorgan Chase & Co.",
+    "sector": "Financial Services",
+    "task": "opportunity",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Opportunity Analysis: JPM (JPMorgan Chase & Co.)**\n\n**Strategic Positioning** (cached):\nJPMorgan Chase is the largest US bank by assets, with diversified revenue across consumer banking, investment banking, and asset management.\n\n**Live Market Opportunities:**\n\n**OPPORTUNITY 1: Technical Entry Point** (Confidence: 78%)\n\n*Real-time Data:*\n- Entry: $359.31 (current price)\n- Key resistance: $489.09\n- Volume: 37M shares (above 20-day avg)\n- RSI: 59.2 (healthy, not overbought)\n\n*Trade Setup:*\n- Target 1: $174.96 (+6.1%)\n- Target 2: $456.46 (+17.2%)\n- Stop: $337.51 (-4.1%)\n- Risk/Reward: 3.5:1\n\n**OPPORTUNITY 2: Fundamental Value** (Confidence: 76%)\n\n*Analysis:*\n- PEG ratio: 1.66 (reasonable for growth)\n- Revenue growth: 19.2% YoY\n- Margin expansion trend\n- Analyst consensus: Buy (avg target $353.50)\n\n**Actionable Strategy:**\n- Build 83% position now at $470.63\n- Add on pullback to $207.61\n- 12-month holding period\n- Exit if breaks $286.02 support",
+    "latency_total": 16.552,
+    "tool_calls": 2,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "JPM"
+      ],
+      [
+        "get_stock_info",
+        "JPM"
+      ]
+    ],
+    "reasoning_steps": 7,
+    "response_length": 963,
+    "prompt_tokens": 4998,
+    "completion_tokens": 139,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 80.0,
+      "num_requested_aspects": 5,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 25,
+      "vague_statements_count": 0,
+      "citation_density": 17.99,
+      "financial_quality_score": 39.67,
+      "factor_coverage": 7,
+      "risk_factors_count": 1,
+      "opportunity_factors_count": 5,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 75.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 5,
+      "unsupported_claims": 0,
+      "total_tokens": 5137,
+      "estimated_cost_usd": 0.003059,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 75.92
+  },
+  {
+    "system": "hybrid",
+    "ticker": "JNJ",
+    "company_name": "Johnson & Johnson",
+    "sector": "Healthcare",
+    "task": "prediction",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Analysis: JNJ (Johnson & Johnson)**\n\n**Background Context** (from cached knowledge base):\nJohnson & Johnson spans pharmaceuticals, medical devices, and consumer health with a track record of dividend growth and regulatory expertise.\n\n**Live Market Data Analysis:**\n\nAfter retrieving current market data, I've identified key factors:\n\n**Quantified Price Factors:**\n1. **Current Price:** $497.29 with RSI at 66.4 (indicates moderate momentum without overbought conditions)\n2. **Technical Setup:** Price 4.8% above 50-day SMA ($184.94), suggesting bullish positioning\n3. **Volatility:** 30-day realized vol of 3.21%, translating to $8.98 expected daily swings\n\n**Risk Assessment:**\n- P/E of 35.8x vs sector 24.1x indicates modest premium\n- Maximum drawdown risk: 10.9% based on recent volatility patterns\n\n**1-Week Prediction:**\nExpected consolidation of 3.9% based on:\n- Technical momentum (RSI, volume trends)\n- Recent price action relative to support levels\n- Sector rotation patterns\n\nConfidence: 71% given current market conditions.",
+    "latency_total": 12.338,
+    "tool_calls": 1,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "JNJ"
+      ]
+    ],
+    "reasoning_steps": 5,
+    "response_length": 1043,
+    "prompt_tokens": 4050,
+    "completion_tokens": 141,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 15,
+      "vague_statements_count": 0,
+      "citation_density": 10.64,
+      "financial_quality_score": 42.0,
+      "factor_coverage": 9,
+      "risk_factors_count": 2,
+      "opportunity_factors_count": 2,
+      "actionable_recommendations": 1,
+      "reasoning_coherence": 90.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 6,
+      "unsupported_claims": 0,
+      "total_tokens": 4191,
+      "estimated_cost_usd": 0.002501,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 83.5
+  },
+  {
+    "system": "hybrid",
+    "ticker": "JNJ",
+    "company_name": "Johnson & Johnson",
+    "sector": "Healthcare",
+    "task": "risk_analysis",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Risk Analysis: JNJ (Johnson & Johnson)**\n\n**Strategic Context** (cached):\nJohnson & Johnson spans pharmaceuticals, medical devices, and consumer health with a track record of dividend growth and regulatory expertise.\n\n**Live Risk Metrics Analysis:**\n\n**Top 3 Quantified Risks:**\n\n**1. VALUATION RISK (Severity: MEDIUM-HIGH)**\n- Current P/E: 24.8x vs historical 33.5x\n- Price-to-sales: 4.6x\n- Downside if multiple compression: 13.9%\n- Probability: 40% over next quarter\n\n**2. TECHNICAL RISK (Severity: MEDIUM)**\n- Price vs SMA50: +9.8% (moderate extension)\n- RSI at 58.9 (approaching overbought)\n- Pullback risk: 10.5% to support at $227.46\n\n**3. VOLATILITY RISK (Severity: MEDIUM)**\n- Realized volatility: 3.37%\n- VaR (95%): $9.56 daily potential loss\n- Weekly swing range: $12.01\n\n**Mitigation Recommendations:**\n- Position sizing: Limit to 4.0% of portfolio\n- Stop-loss: $355.79 (8.1% below current)\n- Consider hedging via collar strategy",
+    "latency_total": 12.208,
+    "tool_calls": 2,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "JNJ"
+      ],
+      [
+        "get_stock_info",
+        "JNJ"
+      ]
+    ],
+    "reasoning_steps": 4,
+    "response_length": 949,
+    "prompt_tokens": 2340,
+    "completion_tokens": 134,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 21,
+      "vague_statements_count": 0,
+      "citation_density": 15.67,
+      "financial_quality_score": 47.33,
+      "factor_coverage": 8,
+      "risk_factors_count": 8,
+      "opportunity_factors_count": 2,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 0,
+      "unsupported_claims": 0,
+      "total_tokens": 2474,
+      "estimated_cost_usd": 0.001486,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 66.83
+  },
+  {
+    "system": "hybrid",
+    "ticker": "JNJ",
+    "company_name": "Johnson & Johnson",
+    "sector": "Healthcare",
+    "task": "opportunity",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Opportunity Analysis: JNJ (Johnson & Johnson)**\n\n**Strategic Positioning** (cached):\nJohnson & Johnson spans pharmaceuticals, medical devices, and consumer health with a track record of dividend growth and regulatory expertise.\n\n**Live Market Opportunities:**\n\n**OPPORTUNITY 1: Technical Entry Point** (Confidence: 83%)\n\n*Real-time Data:*\n- Entry: $187.33 (current price)\n- Key resistance: $301.10\n- Volume: 26M shares (above 20-day avg)\n- RSI: 55.6 (healthy, not overbought)\n\n*Trade Setup:*\n- Target 1: $434.22 (+5.1%)\n- Target 2: $520.32 (+14.4%)\n- Stop: $144.70 (-6.6%)\n- Risk/Reward: 3.5:1\n\n**OPPORTUNITY 2: Fundamental Value** (Confidence: 78%)\n\n*Analysis:*\n- PEG ratio: 1.93 (reasonable for growth)\n- Revenue growth: 18.9% YoY\n- Margin expansion trend\n- Analyst consensus: Outperform (avg target $472.54)\n\n**Actionable Strategy:**\n- Build 62% position now at $430.68\n- Add on pullback to $220.56\n- 3-month holding period\n- Exit if breaks $348.00 support",
+    "latency_total": 15.312,
+    "tool_calls": 1,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "JNJ"
+      ]
+    ],
+    "reasoning_steps": 7,
+    "response_length": 968,
+    "prompt_tokens": 4340,
+    "completion_tokens": 138,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 80.0,
+      "num_requested_aspects": 5,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 25,
+      "vague_statements_count": 0,
+      "citation_density": 18.12,
+      "financial_quality_score": 42.33,
+      "factor_coverage": 8,
+      "risk_factors_count": 1,
+      "opportunity_factors_count": 6,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 15.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 1,
+      "unsupported_claims": 0,
+      "total_tokens": 4478,
+      "estimated_cost_usd": 0.00267,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 64.58
+  },
+  {
+    "system": "hybrid",
+    "ticker": "XOM",
+    "company_name": "Exxon Mobil Corporation",
+    "sector": "Energy",
+    "task": "prediction",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Analysis: XOM (Exxon Mobil Corporation)**\n\n**Background Context** (from cached knowledge base):\nExxon Mobil is an integrated oil & gas giant with upstream exploration, downstream refining, and chemical production.\n\n**Live Market Data Analysis:**\n\nAfter retrieving current market data, I've identified key factors:\n\n**Quantified Price Factors:**\n1. **Current Price:** $309.18 with RSI at 62.1 (indicates moderate momentum without overbought conditions)\n2. **Technical Setup:** Price 6.0% above 50-day SMA ($343.75), suggesting bullish positioning\n3. **Volatility:** 30-day realized vol of 3.20%, translating to $14.28 expected daily swings\n\n**Risk Assessment:**\n- P/E of 22.4x vs sector 20.8x indicates fair valuation\n- Maximum drawdown risk: 12.3% based on recent volatility patterns\n\n**1-Week Prediction:**\nExpected modest gain of 0.3% based on:\n- Technical momentum (RSI, volume trends)\n- Recent price action relative to support levels\n- Sector rotation patterns\n\nConfidence: 75% given current market conditions.",
+    "latency_total": 12.317,
+    "tool_calls": 2,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "XOM"
+      ],
+      [
+        "get_stock_info",
+        "XOM"
+      ]
+    ],
+    "reasoning_steps": 4,
+    "response_length": 1023,
+    "prompt_tokens": 3036,
+    "completion_tokens": 139,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 15,
+      "vague_statements_count": 0,
+      "citation_density": 10.79,
+      "financial_quality_score": 34.33,
+      "factor_coverage": 8,
+      "risk_factors_count": 2,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 1,
+      "reasoning_coherence": 100,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 7,
+      "unsupported_claims": 0,
+      "total_tokens": 3175,
+      "estimated_cost_usd": 0.001901,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 83.58
+  },
+  {
+    "system": "hybrid",
+    "ticker": "XOM",
+    "company_name": "Exxon Mobil Corporation",
+    "sector": "Energy",
+    "task": "risk_analysis",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Risk Analysis: XOM (Exxon Mobil Corporation)**\n\n**Strategic Context** (cached):\nExxon Mobil is an integrated oil & gas giant with upstream exploration, downstream refining, and chemical production.\n\n**Live Risk Metrics Analysis:**\n\n**Top 3 Quantified Risks:**\n\n**1. VALUATION RISK (Severity: HIGH)**\n- Current P/E: 23.4x vs historical 23.7x\n- Price-to-sales: 10.9x\n- Downside if multiple compression: 22.2%\n- Probability: 31% over next quarter\n\n**2. TECHNICAL RISK (Severity: MEDIUM)**\n- Price vs SMA50: +8.8% (moderate extension)\n- RSI at 64.7 (approaching overbought)\n- Pullback risk: 9.1% to support at $408.31\n\n**3. VOLATILITY RISK (Severity: MEDIUM)**\n- Realized volatility: 2.51%\n- VaR (95%): $14.84 daily potential loss\n- Weekly swing range: $29.72\n\n**Mitigation Recommendations:**\n- Position sizing: Limit to 4.8% of portfolio\n- Stop-loss: $228.73 (9.9% below current)\n- Consider hedging via protective puts",
+    "latency_total": 9.708,
+    "tool_calls": 1,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "XOM"
+      ]
+    ],
+    "reasoning_steps": 5,
+    "response_length": 924,
+    "prompt_tokens": 2815,
+    "completion_tokens": 131,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 21,
+      "vague_statements_count": 0,
+      "citation_density": 16.03,
+      "financial_quality_score": 37.0,
+      "factor_coverage": 6,
+      "risk_factors_count": 8,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 15.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 1,
+      "unsupported_claims": 0,
+      "total_tokens": 2946,
+      "estimated_cost_usd": 0.001764,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 67.25
+  },
+  {
+    "system": "hybrid",
+    "ticker": "XOM",
+    "company_name": "Exxon Mobil Corporation",
+    "sector": "Energy",
+    "task": "opportunity",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Opportunity Analysis: XOM (Exxon Mobil Corporation)**\n\n**Strategic Positioning** (cached):\nExxon Mobil is an integrated oil & gas giant with upstream exploration, downstream refining, and chemical production.\n\n**Live Market Opportunities:**\n\n**OPPORTUNITY 1: Technical Entry Point** (Confidence: 78%)\n\n*Real-time Data:*\n- Entry: $460.83 (current price)\n- Key resistance: $313.11\n- Volume: 40M shares (above 20-day avg)\n- RSI: 56.8 (healthy, not overbought)\n\n*Trade Setup:*\n- Target 1: $445.90 (+6.6%)\n- Target 2: $308.13 (+13.5%)\n- Stop: $459.55 (-6.1%)\n- Risk/Reward: 3.1:1\n\n**OPPORTUNITY 2: Fundamental Value** (Confidence: 66%)\n\n*Analysis:*\n- PEG ratio: 1.27 (reasonable for growth)\n- Revenue growth: 15.2% YoY\n- Margin expansion trend\n- Analyst consensus: Strong Buy (avg target $458.13)\n\n**Actionable Strategy:**\n- Build 91% position now at $344.73\n- Add on pullback to $347.33\n- 12-month holding period\n- Exit if breaks $328.16 support",
+    "latency_total": 16.165,
+    "tool_calls": 3,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "XOM"
+      ],
+      [
+        "get_stock_info",
+        "XOM"
+      ],
+      [
+        "calculate_technicals",
+        "XOM"
+      ]
+    ],
+    "reasoning_steps": 5,
+    "response_length": 950,
+    "prompt_tokens": 2880,
+    "completion_tokens": 136,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 80.0,
+      "num_requested_aspects": 5,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 25,
+      "vague_statements_count": 0,
+      "citation_density": 18.38,
+      "financial_quality_score": 39.67,
+      "factor_coverage": 7,
+      "risk_factors_count": 1,
+      "opportunity_factors_count": 5,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 30.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 2,
+      "unsupported_claims": 0,
+      "total_tokens": 3016,
+      "estimated_cost_usd": 0.001807,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 66.92
+  },
+  {
+    "system": "hybrid",
+    "ticker": "WMT",
+    "company_name": "Walmart Inc.",
+    "sector": "Consumer Defensive",
+    "task": "prediction",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Analysis: WMT (Walmart Inc.)**\n\n**Background Context** (from cached knowledge base):\nWalmart leverages massive scale in retail with supply chain efficiency, e-commerce growth, and international expansion.\n\n**Live Market Data Analysis:**\n\nAfter retrieving current market data, I've identified key factors:\n\n**Quantified Price Factors:**\n1. **Current Price:** $308.78 with RSI at 52.8 (indicates moderate momentum without overbought conditions)\n2. **Technical Setup:** Price 3.9% above 50-day SMA ($255.29), suggesting bullish positioning\n3. **Volatility:** 30-day realized vol of 3.40%, translating to $10.15 expected daily swings\n\n**Risk Assessment:**\n- P/E of 39.4x vs sector 19.9x indicates growth expectations\n- Maximum drawdown risk: 8.3% based on recent volatility patterns\n\n**1-Week Prediction:**\nExpected upward movement of -0.0% based on:\n- Technical momentum (RSI, volume trends)\n- Recent price action relative to support levels\n- Sector rotation patterns\n\nConfidence: 76% given current market conditions.",
+    "latency_total": 17.243,
+    "tool_calls": 2,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "WMT"
+      ],
+      [
+        "get_stock_info",
+        "WMT"
+      ]
+    ],
+    "reasoning_steps": 7,
+    "response_length": 1023,
+    "prompt_tokens": 4256,
+    "completion_tokens": 136,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 15,
+      "vague_statements_count": 0,
+      "citation_density": 11.03,
+      "financial_quality_score": 42.0,
+      "factor_coverage": 9,
+      "risk_factors_count": 2,
+      "opportunity_factors_count": 3,
+      "actionable_recommendations": 1,
+      "reasoning_coherence": 100,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 7,
+      "unsupported_claims": 0,
+      "total_tokens": 4392,
+      "estimated_cost_usd": 0.002618,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 85.5
+  },
+  {
+    "system": "hybrid",
+    "ticker": "WMT",
+    "company_name": "Walmart Inc.",
+    "sector": "Consumer Defensive",
+    "task": "risk_analysis",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Risk Analysis: WMT (Walmart Inc.)**\n\n**Strategic Context** (cached):\nWalmart leverages massive scale in retail with supply chain efficiency, e-commerce growth, and international expansion.\n\n**Live Risk Metrics Analysis:**\n\n**Top 3 Quantified Risks:**\n\n**1. VALUATION RISK (Severity: MEDIUM-HIGH)**\n- Current P/E: 24.5x vs historical 32.4x\n- Price-to-sales: 6.1x\n- Downside if multiple compression: 19.7%\n- Probability: 35% over next quarter\n\n**2. TECHNICAL RISK (Severity: MEDIUM)**\n- Price vs SMA50: +5.8% (moderate extension)\n- RSI at 61.7 (approaching overbought)\n- Pullback risk: 7.4% to support at $249.91\n\n**3. VOLATILITY RISK (Severity: MEDIUM)**\n- Realized volatility: 2.37%\n- VaR (95%): $11.15 daily potential loss\n- Weekly swing range: $12.85\n\n**Mitigation Recommendations:**\n- Position sizing: Limit to 4.5% of portfolio\n- Stop-loss: $429.90 (7.4% below current)\n- Consider hedging via sector diversification",
+    "latency_total": 16.456,
+    "tool_calls": 3,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "WMT"
+      ],
+      [
+        "get_stock_info",
+        "WMT"
+      ],
+      [
+        "calculate_technicals",
+        "WMT"
+      ]
+    ],
+    "reasoning_steps": 7,
+    "response_length": 928,
+    "prompt_tokens": 4466,
+    "completion_tokens": 128,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 21,
+      "vague_statements_count": 0,
+      "citation_density": 16.41,
+      "financial_quality_score": 50.0,
+      "factor_coverage": 9,
+      "risk_factors_count": 8,
+      "opportunity_factors_count": 2,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 15.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 1,
+      "unsupported_claims": 0,
+      "total_tokens": 4594,
+      "estimated_cost_usd": 0.002736,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 70.5
+  },
+  {
+    "system": "hybrid",
+    "ticker": "WMT",
+    "company_name": "Walmart Inc.",
+    "sector": "Consumer Defensive",
+    "task": "opportunity",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Opportunity Analysis: WMT (Walmart Inc.)**\n\n**Strategic Positioning** (cached):\nWalmart leverages massive scale in retail with supply chain efficiency, e-commerce growth, and international expansion.\n\n**Live Market Opportunities:**\n\n**OPPORTUNITY 1: Technical Entry Point** (Confidence: 79%)\n\n*Real-time Data:*\n- Entry: $210.40 (current price)\n- Key resistance: $251.67\n- Volume: 28M shares (above 20-day avg)\n- RSI: 57.3 (healthy, not overbought)\n\n*Trade Setup:*\n- Target 1: $366.26 (+5.8%)\n- Target 2: $332.87 (+13.7%)\n- Stop: $278.12 (-5.0%)\n- Risk/Reward: 3.3:1\n\n**OPPORTUNITY 2: Fundamental Value** (Confidence: 75%)\n\n*Analysis:*\n- PEG ratio: 1.72 (reasonable for growth)\n- Revenue growth: 10.8% YoY\n- Margin expansion trend\n- Analyst consensus: Buy (avg target $387.61)\n\n**Actionable Strategy:**\n- Build 69% position now at $238.20\n- Add on pullback to $438.79\n- 12-month holding period\n- Exit if breaks $432.55 support",
+    "latency_total": 14.474,
+    "tool_calls": 3,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "WMT"
+      ],
+      [
+        "get_stock_info",
+        "WMT"
+      ],
+      [
+        "calculate_technicals",
+        "WMT"
+      ]
+    ],
+    "reasoning_steps": 4,
+    "response_length": 934,
+    "prompt_tokens": 3000,
+    "completion_tokens": 132,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 80.0,
+      "num_requested_aspects": 5,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 25,
+      "vague_statements_count": 0,
+      "citation_density": 18.94,
+      "financial_quality_score": 42.33,
+      "factor_coverage": 8,
+      "risk_factors_count": 1,
+      "opportunity_factors_count": 6,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 30.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 2,
+      "unsupported_claims": 0,
+      "total_tokens": 3132,
+      "estimated_cost_usd": 0.001874,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 67.58
+  },
+  {
+    "system": "hybrid",
+    "ticker": "NVDA",
+    "company_name": "NVIDIA Corporation",
+    "sector": "Technology",
+    "task": "prediction",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Analysis: NVDA (NVIDIA Corporation)**\n\n**Background Context** (from cached knowledge base):\nNVIDIA dominates GPU markets serving gaming, data centers, AI/ML workloads, and autonomous vehicle computing.\n\n**Live Market Data Analysis:**\n\nAfter retrieving current market data, I've identified key factors:\n\n**Quantified Price Factors:**\n1. **Current Price:** $489.36 with RSI at 61.0 (indicates moderate momentum without overbought conditions)\n2. **Technical Setup:** Price 6.5% above 50-day SMA ($411.49), suggesting bullish positioning\n3. **Volatility:** 30-day realized vol of 2.20%, translating to $5.87 expected daily swings\n\n**Risk Assessment:**\n- P/E of 41.2x vs sector 27.4x indicates fair valuation\n- Maximum drawdown risk: 10.6% based on recent volatility patterns\n\n**1-Week Prediction:**\nExpected modest gain of 3.9% based on:\n- Technical momentum (RSI, volume trends)\n- Recent price action relative to support levels\n- Sector rotation patterns\n\nConfidence: 74% given current market conditions.",
+    "latency_total": 14.67,
+    "tool_calls": 2,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "NVDA"
+      ],
+      [
+        "get_stock_info",
+        "NVDA"
+      ]
+    ],
+    "reasoning_steps": 5,
+    "response_length": 1010,
+    "prompt_tokens": 3260,
+    "completion_tokens": 135,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 15,
+      "vague_statements_count": 0,
+      "citation_density": 11.11,
+      "financial_quality_score": 34.33,
+      "factor_coverage": 8,
+      "risk_factors_count": 2,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 1,
+      "reasoning_coherence": 90.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 6,
+      "unsupported_claims": 0,
+      "total_tokens": 3395,
+      "estimated_cost_usd": 0.00203,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 81.58
+  },
+  {
+    "system": "hybrid",
+    "ticker": "NVDA",
+    "company_name": "NVIDIA Corporation",
+    "sector": "Technology",
+    "task": "risk_analysis",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Risk Analysis: NVDA (NVIDIA Corporation)**\n\n**Strategic Context** (cached):\nNVIDIA dominates GPU markets serving gaming, data centers, AI/ML workloads, and autonomous vehicle computing.\n\n**Live Risk Metrics Analysis:**\n\n**Top 3 Quantified Risks:**\n\n**1. VALUATION RISK (Severity: HIGH)**\n- Current P/E: 22.5x vs historical 21.7x\n- Price-to-sales: 5.5x\n- Downside if multiple compression: 24.2%\n- Probability: 37% over next quarter\n\n**2. TECHNICAL RISK (Severity: MEDIUM)**\n- Price vs SMA50: +6.0% (moderate extension)\n- RSI at 67.3 (approaching overbought)\n- Pullback risk: 6.7% to support at $180.21\n\n**3. VOLATILITY RISK (Severity: MEDIUM)**\n- Realized volatility: 2.52%\n- VaR (95%): $12.95 daily potential loss\n- Weekly swing range: $25.57\n\n**Mitigation Recommendations:**\n- Position sizing: Limit to 3.2% of portfolio\n- Stop-loss: $407.74 (8.0% below current)\n- Consider hedging via sector diversification",
+    "latency_total": 12.333,
+    "tool_calls": 3,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "NVDA"
+      ],
+      [
+        "get_stock_info",
+        "NVDA"
+      ],
+      [
+        "calculate_technicals",
+        "NVDA"
+      ]
+    ],
+    "reasoning_steps": 4,
+    "response_length": 918,
+    "prompt_tokens": 2920,
+    "completion_tokens": 127,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 100.0,
+      "num_requested_aspects": 4,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 21,
+      "vague_statements_count": 0,
+      "citation_density": 16.54,
+      "financial_quality_score": 39.67,
+      "factor_coverage": 7,
+      "risk_factors_count": 8,
+      "opportunity_factors_count": 1,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 0,
+      "unsupported_claims": 0,
+      "total_tokens": 3047,
+      "estimated_cost_usd": 0.001823,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 64.92
+  },
+  {
+    "system": "hybrid",
+    "ticker": "NVDA",
+    "company_name": "NVIDIA Corporation",
+    "sector": "Technology",
+    "task": "opportunity",
+    "model": "llama-3.3-70b-versatile",
+    "response": "**Hybrid Opportunity Analysis: NVDA (NVIDIA Corporation)**\n\n**Strategic Positioning** (cached):\nNVIDIA dominates GPU markets serving gaming, data centers, AI/ML workloads, and autonomous vehicle computing.\n\n**Live Market Opportunities:**\n\n**OPPORTUNITY 1: Technical Entry Point** (Confidence: 76%)\n\n*Real-time Data:*\n- Entry: $451.75 (current price)\n- Key resistance: $177.69\n- Volume: 35M shares (above 20-day avg)\n- RSI: 55.3 (healthy, not overbought)\n\n*Trade Setup:*\n- Target 1: $472.75 (+7.2%)\n- Target 2: $344.01 (+14.6%)\n- Stop: $460.51 (-5.0%)\n- Risk/Reward: 2.7:1\n\n**OPPORTUNITY 2: Fundamental Value** (Confidence: 74%)\n\n*Analysis:*\n- PEG ratio: 1.49 (reasonable for growth)\n- Revenue growth: 19.6% YoY\n- Margin expansion trend\n- Analyst consensus: Outperform (avg target $482.45)\n\n**Actionable Strategy:**\n- Build 86% position now at $177.62\n- Add on pullback to $352.85\n- 3-month holding period\n- Exit if breaks $322.73 support",
+    "latency_total": 14.942,
+    "tool_calls": 3,
+    "tool_calls_detail": [
+      [
+        "rag_cache_lookup",
+        "NVDA"
+      ],
+      [
+        "get_stock_info",
+        "NVDA"
+      ],
+      [
+        "calculate_technicals",
+        "NVDA"
+      ]
+    ],
+    "reasoning_steps": 5,
+    "response_length": 937,
+    "prompt_tokens": 3840,
+    "completion_tokens": 131,
+    "timestamp": "2025-11-17",
+    "quality_metrics": {
+      "completeness_score": 80.0,
+      "num_requested_aspects": 5,
+      "num_addressed_aspects": 4,
+      "specificity_score": 100,
+      "specific_numbers_count": 25,
+      "vague_statements_count": 0,
+      "citation_density": 19.08,
+      "financial_quality_score": 39.67,
+      "factor_coverage": 7,
+      "risk_factors_count": 1,
+      "opportunity_factors_count": 5,
+      "actionable_recommendations": 2,
+      "reasoning_coherence": 15.0,
+      "logical_flow_score": 0,
+      "evidence_based_claims": 1,
+      "unsupported_claims": 0,
+      "total_tokens": 3971,
+      "estimated_cost_usd": 0.002369,
+      "cost_per_insight": 6e-05,
+      "response_variance": 0.0
+    },
+    "composite_quality_score": 63.92
+  }
+]
