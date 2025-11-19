@@ -19,6 +19,8 @@ from src.middleware.auth import AuthMiddleware
 from src.middleware.rate_limiter import RateLimitMiddleware
 from src.data_sources.sec_edgar import SECEdgarSource
 from src.data_sources import register_source
+from src.analysis.rag_cache import RAGCache
+from src.analysis.router import IntelligentRouter
 
 logger = structlog.get_logger(__name__)
 
@@ -27,12 +29,13 @@ db_pool: asyncpg.Pool = None
 redis_client: redis.Redis = None
 api_key_manager: APIKeyManager = None
 stripe_manager: StripeManager = None
+analysis_router: IntelligentRouter = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
-    global db_pool, redis_client, api_key_manager, stripe_manager
+    global db_pool, redis_client, api_key_manager, stripe_manager, analysis_router
 
     # Startup
     logger.info("Starting FinSight API", version="1.0.0")
@@ -70,14 +73,38 @@ async def lifespan(app: FastAPI):
         "user_agent": os.getenv("SEC_USER_AGENT", "FinSight API/1.0 (contact@finsight.io)")
     })
     register_source(sec_source)
+    data_sources = {"sec": sec_source}
     logger.info("Data sources registered", sources=["SEC_EDGAR"])
+
+    # Initialize AI Analysis Engine
+    try:
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if groq_api_key:
+            from groq import Groq
+
+            rag_cache = RAGCache(redis_client)
+            llm_client = Groq(api_key=groq_api_key)
+            analysis_router = IntelligentRouter(rag_cache, llm_client, data_sources)
+
+            logger.info("AI Analysis Engine initialized", systems=["rag", "hybrid", "agent"])
+        else:
+            logger.warning("GROQ_API_KEY not set, AI analysis features disabled")
+    except Exception as e:
+        logger.error("Failed to initialize AI Analysis Engine", error=str(e))
+        analysis_router = None
 
     # Inject dependencies into route modules
     from src.api import auth as auth_module
     from src.api import subscriptions as subs_module
+    from src.api import analysis as analysis_module
 
     auth_module.set_dependencies(api_key_manager, db_pool)
     subs_module.set_dependencies(stripe_manager)
+
+    if analysis_router:
+        analysis_module.set_dependencies(analysis_router)
+        logger.info("Analysis router dependencies injected")
+
     logger.info("Route dependencies injected")
 
     yield
@@ -189,7 +216,7 @@ async def health():
 
 
 # Import and include routers
-from src.api import metrics, auth, companies, subscriptions
+from src.api import metrics, auth, companies, subscriptions, analysis
 
 # Note: Dependencies are injected during lifespan startup
 # Middleware is added after lifespan completes via the lifespan context manager
@@ -198,6 +225,7 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(metrics.router, prefix="/api/v1", tags=["Financial Metrics"])
 app.include_router(companies.router, prefix="/api/v1", tags=["Companies"])
 app.include_router(subscriptions.router, prefix="/api/v1", tags=["Billing"])
+app.include_router(analysis.router, prefix="/api/v1", tags=["AI Analysis"])
 
 
 if __name__ == "__main__":

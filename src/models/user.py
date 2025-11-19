@@ -111,27 +111,35 @@ TIER_LIMITS = {
         "max_api_keys": 1,
         "data_sources": ["sec"],  # Only SEC EDGAR
         "features": ["basic_metrics"],
+        "ai_analysis_calls_per_month": 0,  # No AI analysis
+        "ai_analysis_system": None,
     },
     PricingTier.STARTER: {
         "api_calls_per_month": 1000,
         "rate_limit_per_minute": 50,
         "max_api_keys": 3,
         "data_sources": ["sec", "yahoo"],
-        "features": ["basic_metrics", "calculations", "ttm"],
+        "features": ["basic_metrics", "calculations", "ttm", "ai_analysis_rag"],
+        "ai_analysis_calls_per_month": 50,  # 50 RAG analyses/month
+        "ai_analysis_system": "rag",
     },
     PricingTier.PROFESSIONAL: {
         "api_calls_per_month": 10000,
         "rate_limit_per_minute": 200,
         "max_api_keys": 10,
         "data_sources": ["sec", "yahoo", "alpha_vantage"],
-        "features": ["all_metrics", "calculations", "ai_synthesis", "webhooks"],
+        "features": ["all_metrics", "calculations", "ai_synthesis_hybrid", "webhooks"],
+        "ai_analysis_calls_per_month": 500,  # 500 Hybrid analyses/month ⭐
+        "ai_analysis_system": "hybrid",
     },
     PricingTier.ENTERPRISE: {
         "api_calls_per_month": -1,  # Unlimited
         "rate_limit_per_minute": 1000,
         "max_api_keys": -1,  # Unlimited
         "data_sources": ["all"],
-        "features": ["all", "priority_support", "sla", "custom_metrics"],
+        "features": ["all", "priority_support", "sla", "custom_metrics", "ai_synthesis_agent"],
+        "ai_analysis_calls_per_month": -1,  # Unlimited Agent analyses
+        "ai_analysis_system": "agent",
     },
 }
 
