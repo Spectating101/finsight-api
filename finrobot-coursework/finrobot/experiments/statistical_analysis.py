@@ -586,11 +586,15 @@ class StatisticalAnalyzer:
         Export comparison report to JSON.
 
         Args:
-            report: ComparisonReport to export
+            report: ComparisonReport to export or dict
             output_path: Output file path
         """
         with open(output_path, "w") as f:
-            json.dump(report.to_dict(), f, indent=2)
+            # Handle both ComparisonReport objects and dicts
+            if isinstance(report, dict):
+                json.dump(report, f, indent=2)
+            else:
+                json.dump(report.to_dict(), f, indent=2)
 
         logger.info(f"Exported statistical report to {output_path}")
 
