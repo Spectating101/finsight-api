@@ -272,6 +272,24 @@ python scripts/generate_visualizations.py \
 - **Consumer:** WMT, HD, MCD, NKE, SBUX
 - **Energy:** XOM, CVX, COP
 
+### Production API Validation (Groq, Hybrid) — NEW
+- **Systems:** 1 (hybrid profile)
+- **Models (active Groq):**
+  - Meta: `llama-3.3-70b-versatile` (34 runs, baseline quick + expanded)
+  - Meta: `llama-3.1-8b-instant` (34 runs)
+  - Alibaba: `qwen/qwen3-32b` (34 runs)
+  - Moonshot AI: `moonshotai/kimi-k2-instruct` (34 runs)
+- **Stocks:** 15 (AAPL, MSFT, GOOGL, TSLA, NVDA, AMZN, META, JPM, BAC, JNJ, PFE, XOM, CVX, WMT, HD)
+- **Tasks:** 2 per stock (price prediction, risk analysis)
+- **Total:** 4 model variants × (30 main + 4 baseline) = **136 production validations** (no errors on active models)
+- **Runtime/Cost:** seconds per batch; tracked token cost per batch ≈ $0.001–$0.0015; Groq free tier used
+- **Outputs:**
+  - `experiment_results/groq_experiments_expanded.csv` (70B baseline, hybrid)
+  - `experiment_results/groq_llama8b_experiments.csv` (8B, hybrid)
+  - `experiment_results/groq_qwen32b_experiments.csv` (Qwen3-32B, hybrid)
+  - `experiment_results/groq_kimi2_experiments.csv` (Kimi-K2, hybrid)
+  - Note: Mixtral/Gemma2 models are decommissioned on Groq and were skipped (all calls returned model_decommissioned).
+
 ---
 
 ## 🧪 Testing

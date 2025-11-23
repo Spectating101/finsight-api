@@ -20,6 +20,8 @@
 - Visualization generator (400+ lines) - publication-quality plots
 - 35+ new tests (700 lines)
 - Bug fix applied for dict handling
+- **Production validation expanded:** 30 additional Groq Hybrid runs (15 stocks × 2 tasks) + 4 prior = **34 real experiments**, system_name=hybrid, tool_calls=2, reasoning_steps=5. Results: `experiment_results/groq_experiments_expanded.csv` (cost ~$0.018).
+- **Additional providers validated (Groq, hybrid):** Meta LLaMA-8B (`groq_llama8b_experiments.csv`), Alibaba Qwen3-32B (`groq_qwen32b_experiments.csv`), Moonshot Kimi-K2 (`groq_kimi2_experiments.csv`). Each: 34 runs (15 stocks × 2 tasks + 4 baseline), tool_calls=2, reasoning_steps=5, zero errors. Mixtral/Gemma2 deprecated on Groq (all calls failed) and are excluded.
 
 **Total Code:**
 - Production: 3,400+ lines
