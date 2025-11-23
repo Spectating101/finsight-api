@@ -20,6 +20,17 @@ from src.middleware.rate_limiter import RateLimitMiddleware
 from src.data_sources.sec_edgar import SECEdgarSource
 from src.data_sources import register_source
 
+# Initialize Sentry for error tracking (production)
+sentry_dsn = os.getenv("SENTRY_DSN")
+if sentry_dsn:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        environment=os.getenv("ENVIRONMENT", "production"),
+        traces_sample_rate=0.1,  # 10% of transactions for performance monitoring
+        profiles_sample_rate=0.1,  # 10% profiling
+    )
+
 logger = structlog.get_logger(__name__)
 
 # Global instances
@@ -189,12 +200,13 @@ async def health():
 
 
 # Import and include routers
-from src.api import metrics, auth, companies, subscriptions
+from src.api import metrics, auth, companies, subscriptions, answers
 
 # Note: Dependencies are injected during lifespan startup
 # Middleware is added after lifespan completes via the lifespan context manager
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+app.include_router(answers.router, prefix="/api/v1", tags=["LLM-Ready Answers"])
 app.include_router(metrics.router, prefix="/api/v1", tags=["Financial Metrics"])
 app.include_router(companies.router, prefix="/api/v1", tags=["Companies"])
 app.include_router(subscriptions.router, prefix="/api/v1", tags=["Billing"])
