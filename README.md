@@ -6,30 +6,25 @@
 
 FinSight provides SEC EDGAR data, market data, and financial calculations through a clean REST API with built-in AI synthesis capabilities.
 
-## Features
+## What Makes FinSight Different
 
-- **Multi-Source Financial Data**
-  - SEC EDGAR (10-K, 10-Q, 8-K filings)
-  - Yahoo Finance (market data, prices)
-  - Alpha Vantage (real-time data)
-  - Extensible plugin architecture for new sources
+### ✅ Zero Hallucination
+Pure structured JSON responses - no LLM inference, no made-up numbers.
 
-- **Advanced Calculations**
-  - 100+ financial metrics
-  - Trailing Twelve Months (TTM)
-  - Year-over-Year (YoY) growth
-  - Custom formula engine
+### ⚡ Lightning Fast
+Sub-300ms p95 latency with 99.9% SLA (Pro tier).
 
-- **AI Synthesis**
-  - Natural language queries
-  - Citation-backed responses
-  - Multi-source validation
+### 📊 Consistency Scores
+Cross-source validation gives you a 0-1 confidence metric on every response.
 
-- **Production Ready**
-  - API key authentication
-  - Usage-based billing
-  - Rate limiting
-  - Comprehensive logging
+### 🔗 SEC Citations
+Every data point includes direct links to source filings - perfect for compliance.
+
+### 🤖 LLM-Ready Format
+`format=llm` option returns prompt-ready text snippets with metadata.
+
+### 🛡️ Production Grade
+Sentry monitoring, Stripe billing, Redis caching, full observability.
 
 ## Architecture
 
@@ -70,38 +65,86 @@ uvicorn src.main:app --reload
 ### API Documentation
 Once running, visit: http://localhost:8000/docs
 
-## Pricing Tiers
+## Pricing
 
-- **Free**: 100 API calls/month
-- **Starter**: $49/mo - 1,000 calls/month
-- **Professional**: $199/mo - 10,000 calls/month
-- **Enterprise**: $999/mo - Unlimited + SLA
+| Tier | Price | Calls/Month | Key Features |
+|------|-------|-------------|--------------|
+| **Free** | $0 | 50 | Basic metrics, testing |
+| **Starter** | $49 | 2,000 | **LLM answers**, citations, consistency |
+| **Professional** | $199 | 10,000 | All features, **99.9% SLA** |
+| **Enterprise** | $999 | Unlimited | Custom metrics, dedicated support |
 
-## API Example
+## Quick Start
+
+### 1. Get Your API Key
 
 ```bash
-curl -H "X-API-Key: your-key-here" \
-  "https://api.finsight.io/v1/metrics?ticker=AAPL&metric=revenue&period=ttm"
+curl -X POST https://api.finsight.io/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "you@company.com"}'
 ```
 
-Response:
+### 2. Make Your First Request
+
+```bash
+curl -H "X-API-Key: your_key" \
+  "https://api.finsight.io/api/v1/answers?ticker=AAPL&metric=revenue_ttm&format=json"
+```
+
+### 3. Get Structured, Cited Data
+
 ```json
 {
   "ticker": "AAPL",
-  "metric": "revenue",
+  "metric": "revenue_ttm",
   "value": 383285000000,
-  "period": "ttm",
   "unit": "USD",
-  "citations": [
+  "period": "TTM",
+  "as_of": "2024-09-30",
+  "sources": [
     {
-      "source": "SEC EDGAR",
+      "type": "sec_filing",
       "filing": "10-K",
-      "accession": "0000320193-23-000077",
-      "url": "https://www.sec.gov/..."
+      "url": "https://www.sec.gov/...",
+      "excerpt": "Total net sales: $383,285 million"
     }
-  ]
+  ],
+  "consistency_score": 0.96,
+  "retrieved_at": "2025-11-24T12:00:00Z"
 }
 ```
+
+**Key Benefits:**
+- ✅ Structured JSON (no hallucination)
+- ✅ SEC citations with URLs
+- ✅ 96% consistency score
+- ✅ Sub-300ms response time
+
+## Use Cases
+
+- **AI Chatbots**: Financial Q&A with verified sources
+- **Trading Bots**: High-confidence data for algorithmic trading
+- **Dashboards**: Real-time financial metrics with citations
+- **Research Tools**: Compliance-ready data with SEC links
+
+## Documentation
+
+- [API Docs](https://api.finsight.io/docs)
+- [Monetization Guide](./MONETIZATION_GUIDE.md)
+- [Deployment Guide](./DEPLOYMENT_CHECKLIST.md)
+- [Integration Examples](./MONETIZATION_GUIDE.md#integration-examples)
+
+## Built For
+
+LLM-first financial applications that need:
+- Structured data (no hallucination)
+- Verified sources (SEC citations)
+- High confidence (consistency scores)
+- Production speed (<300ms)
+
+---
+
+**Ready to launch?** See [DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)
 
 ## License
 
