@@ -2,10 +2,18 @@ pyautogen>=0.2.19
 ipython
 huggingface_hub
 matplotlib
+seaborn>=0.12.0
+
+# LLM APIs
+openai>=1.0.0
+anthropic>=0.18.0
+
+# statistical analysis
+scipy>=1.11.0
 
 # financial libraries
 finnhub-python
-yfinance
+yfinance>=0.2.0
 mplfinance
 backtrader
 sec_api

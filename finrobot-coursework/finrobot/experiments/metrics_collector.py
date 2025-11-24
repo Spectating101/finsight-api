@@ -27,6 +27,7 @@ class MetricSnapshot:
     system_name: str  # "agent" or "rag"
     ticker: str
     task_name: str
+    model_name: Optional[str] = None
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
     # Timing metrics (seconds)
