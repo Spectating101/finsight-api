@@ -200,12 +200,13 @@ async def health():
 
 
 # Import and include routers
-from src.api import metrics, auth, companies, subscriptions, answers
+from src.api import metrics, auth, companies, subscriptions, answers, intelligence
 
 # Note: Dependencies are injected during lifespan startup
 # Middleware is added after lifespan completes via the lifespan context manager
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+app.include_router(intelligence.router, prefix="/api/v1", tags=["AI Intelligence"])
 app.include_router(answers.router, prefix="/api/v1", tags=["LLM-Ready Answers"])
 app.include_router(metrics.router, prefix="/api/v1", tags=["Financial Metrics"])
 app.include_router(companies.router, prefix="/api/v1", tags=["Companies"])
