@@ -76,12 +76,51 @@ async def lifespan(app: FastAPI):
     )
     logger.info("Managers initialized")
 
-    # Register data sources
+    # Initialize data aggregator
+    from src.data_sources.aggregator import init_aggregator, DataPriority
+    from src.data_sources.polygon_source import PolygonSource
+    from src.data_sources.alphavantage_source import AlphaVantageSource
+    from src.data_sources.finnhub_source import FinnhubSource
+    from src.data_sources.yfinance_source import YFinanceSource
+
+    aggregator = init_aggregator(redis_client)
+
+    # Register data sources with priorities
     sec_source = SECEdgarSource({
         "user_agent": os.getenv("SEC_USER_AGENT", "FinSight API/1.0 (contact@finsight.io)")
     })
     register_source(sec_source)
-    logger.info("Data sources registered", sources=["SEC_EDGAR"])
+
+    # Polygon.io - Real-time data (PRIMARY for Pro+ tiers)
+    if os.getenv("POLYGON_API_KEY"):
+        polygon_source = PolygonSource({
+            "api_key": os.getenv("POLYGON_API_KEY")
+        })
+        aggregator.register_source(polygon_source, DataPriority.PRIMARY)
+        logger.info("Registered Polygon.io (real-time)")
+
+    # Alpha Vantage - Historical + fundamentals (SECONDARY)
+    if os.getenv("ALPHA_VANTAGE_API_KEY"):
+        alphavantage_source = AlphaVantageSource({
+            "api_key": os.getenv("ALPHA_VANTAGE_API_KEY")
+        })
+        aggregator.register_source(alphavantage_source, DataPriority.SECONDARY)
+        logger.info("Registered Alpha Vantage (historical)")
+
+    # Finnhub - News + sentiment (SECONDARY)
+    if os.getenv("FINNHUB_API_KEY"):
+        finnhub_source = FinnhubSource({
+            "api_key": os.getenv("FINNHUB_API_KEY")
+        })
+        aggregator.register_source(finnhub_source, DataPriority.SECONDARY)
+        logger.info("Registered Finnhub (news/sentiment)")
+
+    # yfinance - Free tier fallback (FALLBACK)
+    yfinance_source = YFinanceSource()
+    aggregator.register_source(yfinance_source, DataPriority.FALLBACK)
+    logger.info("Registered yfinance (free tier fallback)")
+
+    logger.info("Data sources registered and aggregator initialized")
 
     # Inject dependencies into route modules
     from src.api import auth as auth_module
@@ -200,12 +239,13 @@ async def health():
 
 
 # Import and include routers
-from src.api import metrics, auth, companies, subscriptions, answers, intelligence
+from src.api import metrics, auth, companies, subscriptions, answers, intelligence, market
 
 # Note: Dependencies are injected during lifespan startup
 # Middleware is added after lifespan completes via the lifespan context manager
 
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+app.include_router(market.router, prefix="/api/v1", tags=["Market Data"])
 app.include_router(intelligence.router, prefix="/api/v1", tags=["AI Intelligence"])
 app.include_router(answers.router, prefix="/api/v1", tags=["LLM-Ready Answers"])
 app.include_router(metrics.router, prefix="/api/v1", tags=["Financial Metrics"])
